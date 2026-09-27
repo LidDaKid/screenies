@@ -636,3 +636,22 @@
 .yt-vtitle { font-size: 16px; font-weight: 500; line-height: 22px; overflow-wrap: break-word; }
 .yt-vsub { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 14px; line-height: 20px; color: var(--sub); }
 .yt-check svg { width: 14px; height: 14px; }
+
+/* ============ brat ============ */
+
+.brat { width: 500px; height: 500px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.brat.sh-wide { width: 800px; height: 450px; }
+.brat.sh-story { width: 405px; height: 720px; }
+.brat-t {
+  flex: none;
+  padding: 0 20px;
+  font-family: Arial, 'Liberation Sans', 'Noto Color Emoji', sans-serif;
+  line-height: .98;
+  letter-spacing: -.02em;
+  overflow-wrap: break-word;
+  transform-origin: center;
+}
+.brat-t.a-center { text-align: center; }
+.brat-t.a-left { text-align: left; }
+.brat-t.a-right { text-align: right; }
+.brat-t.a-justify { text-align: justify; text-align-last: justify; }

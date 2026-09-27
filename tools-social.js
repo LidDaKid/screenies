@@ -928,7 +928,46 @@
     }
   });
 
+  /* ============================== brat ============================== */
+
+  var BRAT_PRESETS = {
+    brat: ['#8ace00', '#000000'], remix: ['#ffffff', '#000000'], pink: ['#ff8fcf', '#000000'],
+    black: ['#000000', '#8ace00'], blood: ['#000000', '#ff1f4b'], baby: ['#bfe4ff', '#000000']
+  };
+
+  TOOLS.push({
+    id: 'brat',
+    label: 'brat',
+    defaults: { text: '', preset: 'brat', bg: '#8ace00', fg: '#000000', size: 110, blur: 1.6, squish: 82, align: 'center', lower: true, shape: 'square' },
+    fields: [
+      { key: 'text', type: 'textarea', label: 'text', rows: 3 },
+      { key: 'preset', type: 'select', label: 'colors', onPick: function (s) {
+        var p = BRAT_PRESETS[s.preset];
+        if (p) { s.bg = p[0]; s.fg = p[1]; }
+      }, options: [['brat', 'brat green'], ['remix', 'remix white'], ['pink', 'pink'], ['black', 'black + green'], ['blood', 'black + red'], ['baby', 'baby blue'], ['custom', 'custom']] },
+      { type: 'row', fields: [
+        { key: 'bg', type: 'color', label: 'background' },
+        { key: 'fg', type: 'color', label: 'text color' }
+      ] },
+      { key: 'size', type: 'range', label: 'text size', min: 30, max: 260, step: 1 },
+      { key: 'blur', type: 'range', label: 'blur', min: 0, max: 8, step: 0.1 },
+      { key: 'squish', type: 'range', label: 'squish', min: 50, max: 130, step: 1 },
+      { type: 'row', fields: [
+        { key: 'align', type: 'select', label: 'align', options: [['center', 'center'], ['justify', 'spread out'], ['left', 'left'], ['right', 'right']] },
+        { key: 'shape', type: 'select', label: 'shape', options: [['square', 'square'], ['wide', 'wide'], ['story', 'story']] },
+        { key: 'lower', type: 'toggle', label: 'lowercase' }
+      ] }
+    ],
+    render: function (s) {
+      var t = s.lower ? String(s.text || '').toLowerCase() : String(s.text || '');
+      var k = (+s.squish || 100) / 100;
+      return '<div class="shot brat sh-' + s.shape + '" style="background:' + s.bg + '">' +
+        '<div class="brat-t a-' + s.align + '" style="color:' + s.fg + ';font-size:' + s.size + 'px;filter:blur(' + s.blur + 'px);' +
+        'transform:scaleX(' + k + ');width:' + (100 / k) + '%">' + br(t) + '</div></div>';
+    }
+  });
+
   /* tab order */
-  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'twitch', 'youtube', 'reddit', 'facebook', 'pinterest', 'whisper','snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
+  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'twitch', 'youtube', 'reddit', 'facebook', 'pinterest', 'whisper', 'brat', 'snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
   TOOLS.sort(function (a, b) { return ORDER.indexOf(a.id) - ORDER.indexOf(b.id); });
 })();
