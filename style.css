@@ -1,11 +1,11 @@
 :root {
-  --bg: #0c0a0f;
-  --panel: #15111b;
-  --field: #1d1725;
-  --line: #2a2233;
+  --bg: #000;
+  --panel: #000;
+  --field: #111;
+  --line: #262626;
   --pink: #ff3d9a;
-  --text: #f6eefb;
-  --dim: #8d7fa0;
+  --text: #f5f5f5;
+  --dim: #8c8c8c;
   --ink: #12060c;
 }
 
@@ -75,7 +75,7 @@ main { flex: 1; display: flex; min-height: 0; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg) radial-gradient(var(--line) 1px, transparent 1px) 0 0 / 14px 14px;
+  background: var(--bg) radial-gradient(#1a1a1a 1px, transparent 1px) 0 0 / 14px 14px;
 }
 
 #actions {
@@ -133,6 +133,8 @@ button.small { padding: 6px 10px; font-size: 11px; }
   color: var(--dim);
   text-transform: lowercase;
 }
+
+.f input[type=range] { width: 100%; accent-color: var(--pink); }
 
 .f input[type=text], .f input[type=number], .f select, .f textarea {
   width: 100%;

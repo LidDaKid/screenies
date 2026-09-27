@@ -3,7 +3,7 @@
 (function () {
   var $ = function (sel) { return document.querySelector(sel); };
   var tabs = $('#tabs'), form = $('#form'), fit = $('#fit'), view = $('#view');
-  var tool, st, refreshers = [], saveTimer;
+  var tool, st, refreshers = [], saveTimer, scale = 1;
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -28,6 +28,10 @@
 
   function render() {
     fit.innerHTML = tool.render(st);
+    [].forEach.call(fit.querySelectorAll('img'), function (im) {
+      if (!im.complete) im.addEventListener('load', refit);
+    });
+    if (tool.mount) tool.mount(fit.firstElementChild, st, { scale: function () { return scale; }, save: save });
     refit();
   }
 
@@ -38,6 +42,7 @@
     var w = shot.offsetWidth, h = shot.offsetHeight;
     var room = view.clientWidth - 32;
     var k = Math.min(1, room / w);
+    scale = k;
     fit.style.width = w + 'px';
     fit.style.transform = k < 1 ? 'scale(' + k + ')' : '';
     fit.style.height = h * k + 'px';
@@ -170,13 +175,33 @@
     if (f.type === 'select') {
       input = el('select');
       fillSelect(input, f, obj);
-      input.addEventListener('change', function () { obj[f.key] = input.value; onChange(); });
+      input.addEventListener('change', function () {
+        obj[f.key] = input.value;
+        if (f.onPick) f.onPick(obj);
+        onChange();
+      });
       if (typeof f.options === 'function') {
         refreshers.push(function () {
           if (!input.isConnected) return false;
           if (document.activeElement !== input) fillSelect(input, f, obj);
         });
       }
+      return labeled(f, input);
+    }
+
+    if (f.type === 'range') {
+      input = el('input');
+      input.type = 'range';
+      input.min = f.min;
+      input.max = f.max;
+      input.step = f.step;
+      input.value = obj[f.key];
+      input.addEventListener('input', function () { obj[f.key] = parseFloat(input.value); onChange(); });
+      input.addEventListener('dblclick', function () {
+        obj[f.key] = tool.defaults[f.key];
+        input.value = obj[f.key];
+        onChange();
+      });
       return labeled(f, input);
     }
 

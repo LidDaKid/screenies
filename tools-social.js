@@ -693,7 +693,84 @@
     }
   });
 
+  /* ============================== pinterest whispers ============================== */
+  // same recipe as aaronson.org/whisperer: upright font, 64px base, outline = 32 copies around a 0.06em circle
+
+  var WH_ALIGN = {
+    center: ['center', 'center', 'center'], top: ['center', 'flex-start', 'center'], bottom: ['center', 'flex-end', 'center'],
+    left: ['flex-start', 'center', 'left'], right: ['flex-end', 'center', 'right'],
+    topleft: ['flex-start', 'flex-start', 'left'], topright: ['flex-end', 'flex-start', 'right'],
+    bottomleft: ['flex-start', 'flex-end', 'left'], bottomright: ['flex-end', 'flex-end', 'right']
+  };
+  var WH_RING = (function () {
+    var out = [];
+    for (var k = 0; k < 32; k++) {
+      var a = k * 2 * Math.PI / 32;
+      out.push([Math.round(1e4 * Math.cos(a)) / 1e4 * 0.06, Math.round(1e4 * Math.sin(a)) / 1e4 * 0.06]);
+    }
+    return out;
+  })();
+
+  TOOLS.push({
+    id: 'whisper',
+    label: 'pinterest whispers',
+    defaults: { image: '', text: '', size: 1, align: 'center', font: 'Whisper', outline: true, color: '#fafafa', outlineColor: '#111111', dx: 0, dy: 0 },
+    fields: [
+      { key: 'image', type: 'image', label: 'picture', max: 1600 },
+      { key: 'text', type: 'textarea', label: 'text', rows: 3 },
+      { key: 'size', type: 'range', label: 'font size', min: 0.25, max: 5, step: 0.05 },
+      { type: 'row', fields: [
+        { key: 'align', type: 'select', label: 'align text', onPick: function (s) { s.dx = 0; s.dy = 0; }, options: [
+          ['center', 'center'], ['top', 'top'], ['bottom', 'bottom'], ['left', 'left'], ['right', 'right'],
+          ['topleft', 'top left'], ['topright', 'top right'], ['bottomleft', 'bottom left'], ['bottomright', 'bottom right']] },
+        { key: 'font', type: 'select', label: 'font', options: [
+          ['Whisper', 'upright (whisper)'], ['TikTok Sans', 'tiktok'], ['Arial', 'arial'], ['Courier New', 'courier new'],
+          ['Impact', 'impact'], ['Times New Roman', 'times new roman']] }
+      ] },
+      { type: 'row', fields: [
+        { key: 'color', type: 'color', label: 'text color' },
+        { key: 'outlineColor', type: 'color', label: 'outline color' },
+        { key: 'outline', type: 'toggle', label: 'outline' }
+      ] }
+    ],
+    render: function (s) {
+      var a = WH_ALIGN[s.align] || WH_ALIGN.center;
+      var font = "'" + s.font + "', 'Noto Color Emoji'" + (s.font === 'TikTok Sans' ? ';font-weight:500' : '');
+      var box = 'font-family:' + font + ';font-size:' + s.size + 'em;justify-content:' + a[0] + ';align-items:' + a[1] + ';text-align:' + a[2];
+      var txt = esc(s.text);
+      var ring = s.outline ? WH_RING.map(function (p) {
+        return '<div class="wh-t wh-evil" style="' + box + ';left:' + p[0] + 'em;top:' + p[1] + 'em;color:' + s.outlineColor + '">' + txt + '</div>';
+      }).join('') : '';
+      return '<div class="shot wh">' +
+        (s.image ? '<img class="wh-img" src="' + s.image + '" alt="">' : '<div class="wh-img wh-noimg"></div>') +
+        '<div class="wh-wrap"><div class="wh-move" style="transform:translate(' + (s.dx || 0) + 'px,' + (s.dy || 0) + 'px)">' +
+        '<div class="wh-t" style="' + box + ';color:' + s.color + '"><span class="wh-span">' + txt + '</span></div>' + ring +
+        '</div></div></div>';
+    },
+    // drag the words around like whisperer
+    mount: function (shot, s, app) {
+      var span = shot.querySelector('.wh-span'), move = shot.querySelector('.wh-move');
+      if (!span) return;
+      var start = null;
+      span.addEventListener('pointerdown', function (e) {
+        start = { x: e.clientX, y: e.clientY, dx: s.dx || 0, dy: s.dy || 0 };
+        span.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      span.addEventListener('pointermove', function (e) {
+        if (!start) return;
+        var k = app.scale() || 1;
+        s.dx = Math.round(start.dx + (e.clientX - start.x) / k);
+        s.dy = Math.round(start.dy + (e.clientY - start.y) / k);
+        move.style.transform = 'translate(' + s.dx + 'px,' + s.dy + 'px)';
+      });
+      function end() { if (start) { start = null; app.save(); } }
+      span.addEventListener('pointerup', end);
+      span.addEventListener('pointercancel', end);
+    }
+  });
+
   /* tab order */
-  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'youtube', 'reddit', 'facebook', 'pinterest', 'snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
+  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'youtube', 'reddit', 'facebook', 'pinterest', 'whisper','snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
   TOOLS.sort(function (a, b) { return ORDER.indexOf(a.id) - ORDER.indexOf(b.id); });
 })();
