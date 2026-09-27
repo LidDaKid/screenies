@@ -67,7 +67,11 @@
         c.height = Math.max(1, Math.round(img.naturalHeight * k));
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
-        var alpha = /png|gif|webp|svg/.test(file.type);
+        var alpha = false;
+        if (/png|gif|webp|svg/.test(file.type)) {
+          var px = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+          for (var i = 3; i < px.length; i += 4) if (px[i] < 250) { alpha = true; break; }
+        }
         ok(alpha ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.9));
       };
       img.onerror = function () { URL.revokeObjectURL(url); bad(); };

@@ -173,7 +173,7 @@
     id: 'tiktok',
     label: 'tiktok',
     defaults: {
-      theme: 'light', count: '',
+      theme: 'light', count: '', video: '', progress: 50, clock: '9:41', battery: 80, showPct: false,
       list: []
     },
     fields: [
@@ -181,6 +181,10 @@
         { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
         { key: 'count', type: 'text', label: 'comment count' }
       ] },
+      { type: 'head', label: 'video behind' },
+      { key: 'video', type: 'image', label: 'video screenshot', max: 1200 },
+      { key: 'progress', type: 'range', label: 'how far into the video', min: 0, max: 100, step: 1 },
+      U.STATUS_FIELDS,
       { type: 'head', label: 'comments' },
       { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', user: '', creator: false, text: '', time: '', likes: '', liked: false, reply: false, more: '' }) }], item: [
         { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
@@ -208,9 +212,14 @@
           '</div><div class="tt-like' + (c.liked ? ' on' : '') + '">' + (c.liked ? I.heartFull : I.heart) +
           '<span>' + esc(c.likes) + '</span></div></div>';
       }).join('');
-      return '<div class="shot tt t-' + s.theme + '"><div class="tt-head"><span></span><b>' + esc(s.count) + ' comments</b>' + I.x + '</div>' +
+      var sheet = '<div class="tt t-' + s.theme + '"><div class="tt-head"><span></span><b>' + esc(s.count) + ' comments</b>' + I.x + '</div>' +
         '<div class="tt-list">' + out + '</div>' +
         '<div class="tt-input"><span>Add comment…</span>' + I.at + I.smile + '</div></div>';
+      if (!s.video) return '<div class="shot tt-solo">' + sheet + '</div>';
+      var pct = Math.max(0, Math.min(100, +s.progress || 0));
+      return '<div class="shot tt-phone">' + U.statusBar(s) +
+        '<div class="tt-vid"><img src="' + s.video + '" alt=""><div class="tt-prog"><i style="width:' + pct + '%"></i><b style="left:' + pct + '%"></b></div></div>' +
+        sheet + '</div>';
     }
   });
 
@@ -220,19 +229,33 @@
     id: 'youtube',
     label: 'youtube',
     defaults: {
-      theme: 'dark', count: '', channel: '', channelAvatar: '',
+      theme: 'dark', show: 'both', count: '', channel: '', channelName: '', channelAvatar: '', verified: false,
+      thumb: '', title: '', duration: '', views: '', ago: '', watched: 0,
       list: []
     },
     fields: [
       { type: 'row', fields: [
         { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
-        { key: 'count', type: 'text', label: 'comment count' }
+        { key: 'show', type: 'select', label: 'show', options: [['both', 'video + comments'], ['video', 'just the video'], ['comments', 'just comments']] }
       ] },
+      { type: 'head', label: 'channel' },
+      { key: 'channelAvatar', type: 'image', label: 'channel pfp', max: 200 },
       { type: 'row', fields: [
+        { key: 'channelName', type: 'text', label: 'channel name' },
         { key: 'channel', type: 'text', label: 'channel @' },
-        { key: 'channelAvatar', type: 'image', label: 'channel pfp', max: 200 }
+        { key: 'verified', type: 'toggle', label: 'check' }
       ] },
+      { type: 'head', label: 'video' },
+      { key: 'thumb', type: 'image', label: 'thumbnail', max: 1280 },
+      { key: 'title', type: 'textarea', label: 'title', rows: 2 },
+      { type: 'row', fields: [
+        { key: 'duration', type: 'text', label: 'length', placeholder: '12:34' },
+        { key: 'views', type: 'text', label: 'views', placeholder: '1.2M' },
+        { key: 'ago', type: 'text', label: 'posted', placeholder: '3 days ago' }
+      ] },
+      { key: 'watched', type: 'range', label: 'watched bar', min: 0, max: 100, step: 1 },
       { type: 'head', label: 'comments' },
+      { key: 'count', type: 'text', label: 'comment count' },
       { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', handle: '', time: '', text: '', likes: '', pinned: false, hearted: false, creator: false, reply: false, replies: '' }) }], item: [
         { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
         { type: 'row', fields: [
@@ -267,8 +290,17 @@
           (c.replies ? '<div class="yt-replies">' + I.down + esc(c.replies) + ' ' + (c.replies === '1' ? 'reply' : 'replies') + '</div>' : '') +
           '</div><span class="yt-dots">' + I.dots + '</span></div>';
       }).join('');
-      return '<div class="shot yt t-' + s.theme + '"><div class="yt-head"><b>' + esc(s.count) + ' Comments</b>' +
-        '<span class="yt-sort">' + I.sort + 'Sort by</span></div>' + out + '</div>';
+      var name = s.channelName || String(s.channel || '').replace(/^@/, '');
+      var meta = [s.views ? esc(s.views) + ' views' : '', esc(s.ago)].filter(Boolean).join(' • ');
+      var video = '<div class="yt-video"><div class="yt-thumb">' + (s.thumb ? '<img src="' + s.thumb + '" alt="">' : '') +
+        (s.duration ? '<span class="yt-dur">' + esc(s.duration) + '</span>' : '') +
+        (+s.watched > 0 ? '<div class="yt-watched"><i style="width:' + Math.min(100, +s.watched) + '%"></i></div>' : '') + '</div>' +
+        '<div class="yt-vinfo">' + ava(s.channelAvatar, s.channel || name, 'yt-vava') + '<div class="yt-vtext"><div class="yt-vtitle">' + br(s.title) + '</div>' +
+        '<div class="yt-vsub">' + esc(name) + (s.verified ? '<span class="yt-check">' + ICON.verified + '</span>' : '') + '</div>' +
+        (meta ? '<div class="yt-vsub">' + meta + '</div>' : '') + '</div><span class="yt-dots">' + I.dots + '</span></div></div>';
+      var comments = '<div class="yt-head"><b>' + esc(s.count) + ' Comments</b><span class="yt-sort">' + I.sort + 'Sort by</span></div>' + out;
+      var show = s.show || 'both';
+      return '<div class="shot yt t-' + s.theme + '">' + (show !== 'comments' ? video : '') + (show !== 'video' ? comments : '') + '</div>';
     }
   });
 
@@ -770,7 +802,133 @@
     }
   });
 
+  /* ============================== twitch ============================== */
+
+  var TWITCH_COLORS = ['#ff0000', '#0000ff', '#008000', '#b22222', '#ff7f50', '#9acd32', '#ff4500', '#2e8b57',
+    '#daa520', '#d2691e', '#5f9ea0', '#1e90ff', '#ff69b4', '#8a2be2', '#00ff7f'];
+  var TW_BADGE = {
+    mod: '<svg viewBox="0 0 18 18"><rect width="18" height="18" rx="2" fill="#00ad03"/><path d="M4 14 12.5 5.5M11 4h3v3M5.5 10.5l2 2M3.5 14.5l1 1" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>',
+    vip: '<svg viewBox="0 0 18 18"><rect width="18" height="18" rx="2" fill="#e005b9"/><path d="M5 5h8l2 3-6 6.5L3 8z" fill="#fff"/></svg>',
+    sub: '<svg viewBox="0 0 18 18"><rect width="18" height="18" rx="2" fill="#8205b4"/><path d="m9 3 1.8 3.9 4.2.5-3.1 2.9.8 4.2L9 12.4l-3.7 2.1.8-4.2L3 7.4l4.2-.5z" fill="#fff"/></svg>',
+    streamer: '<svg viewBox="0 0 18 18"><rect width="18" height="18" rx="2" fill="#e91916"/><path d="M4 6h7v6H4zM11 8.5l3.5-2v5L11 9.5z" fill="#fff"/></svg>',
+    prime: '<svg viewBox="0 0 18 18"><rect width="18" height="18" rx="2" fill="#0e9dd9"/><path d="M4 12.5V6l2.5 2L9 4.5 11.5 8 14 6v6.5z" fill="#fff"/></svg>'
+  };
+
+  TOOLS.push({
+    id: 'twitch',
+    label: 'twitch',
+    defaults: {
+      theme: 'dark', stream: '', cam: '', camCorner: 'bottomright', camSize: 28, camBorder: false,
+      avatar: '', name: '', title: '', category: '', viewers: '', uptime: '', live: true,
+      goalText: '', goalNow: '', goalMax: '', goalFont: 'Inter', goalColor: '#ffffff', goalBar: '#9147ff', goalSize: 16, goalBox: true,
+      chatMode: 'side', chatOpacity: 100,
+      emotes: [], chat: []
+    },
+    fields: [
+      { type: 'head', label: 'stream' },
+      { key: 'stream', type: 'image', label: 'stream screen', max: 1600 },
+      { key: 'cam', type: 'image', label: 'streamer cam', max: 800 },
+      { type: 'row', fields: [
+        { key: 'camCorner', type: 'select', label: 'cam corner', options: [['topleft', 'top left'], ['topright', 'top right'], ['bottomleft', 'bottom left'], ['bottomright', 'bottom right']] },
+        { key: 'camBorder', type: 'toggle', label: 'cam border' }
+      ] },
+      { key: 'camSize', type: 'range', label: 'cam size', min: 10, max: 60, step: 1 },
+      { type: 'head', label: 'daily goal' },
+      { key: 'goalText', type: 'text', label: 'goal text', placeholder: 'daily goal: subs' },
+      { type: 'row', fields: [
+        { key: 'goalNow', type: 'text', label: 'now' },
+        { key: 'goalMax', type: 'text', label: 'goal' },
+        { key: 'goalBox', type: 'toggle', label: 'box' }
+      ] },
+      { key: 'goalFont', type: 'select', label: 'font', options: [
+        ['Inter', 'normal'], ['Silkscreen', 'pixel'], ['Whisper', 'upright (whisper)'], ['Figtree', 'rounded'],
+        ['Impact', 'impact'], ['Comic Sans MS', 'comic sans'], ['Courier New', 'typewriter'], ['Source Serif 4', 'serif'], ['Arial Black', 'arial black']] },
+      { type: 'row', fields: [
+        { key: 'goalColor', type: 'color', label: 'text color' },
+        { key: 'goalBar', type: 'color', label: 'bar color' }
+      ] },
+      { key: 'goalSize', type: 'range', label: 'goal text size', min: 10, max: 44, step: 1 },
+      { type: 'head', label: 'streamer' },
+      { key: 'avatar', type: 'image', label: 'pfp', max: 300 },
+      { type: 'row', fields: [
+        { key: 'name', type: 'text', label: 'name' },
+        { key: 'live', type: 'toggle', label: 'live' }
+      ] },
+      { key: 'title', type: 'text', label: 'stream title' },
+      { key: 'category', type: 'text', label: 'category / game' },
+      { type: 'row', fields: [
+        { key: 'viewers', type: 'text', label: 'viewers' },
+        { key: 'uptime', type: 'text', label: 'uptime', placeholder: '2:14:09' },
+        { key: 'theme', type: 'select', label: 'mode', options: [['dark', 'dark'], ['light', 'light']] }
+      ] },
+      { type: 'head', label: 'custom emotes' },
+      { key: 'emotes', type: 'list', compact: true,
+        adds: [{ label: '+ emote', item: item({ code: '', image: '' }) }],
+        item: [
+          { type: 'row', fields: [
+            { key: 'code', type: 'text', label: 'type this in chat', placeholder: 'lydiaHeart' },
+            { key: 'image', type: 'image', label: 'emote pic', max: 112 }
+          ] }
+        ] },
+      { type: 'head', label: 'chat' },
+      { key: 'chatMode', type: 'select', label: 'chat spot', options: [['side', 'next to stream'], ['overlay', 'on top of stream']] },
+      { key: 'chatOpacity', type: 'range', label: 'chat background opacity', min: 0, max: 100, step: 1 },
+      { key: 'chat', type: 'list',
+        adds: [{ label: '+ chatter', item: function () {
+          return { name: '', color: TWITCH_COLORS[Math.floor(Math.random() * TWITCH_COLORS.length)], badge: 'none', text: '' };
+        } }],
+        item: [
+          { type: 'row', fields: [
+            { key: 'name', type: 'text', label: 'name' },
+            { key: 'color', type: 'color', label: 'name color' }
+          ] },
+          { key: 'badge', type: 'select', label: 'badge', options: [['none', 'none'], ['mod', 'mod'], ['vip', 'vip'], ['sub', 'sub'], ['prime', 'prime'], ['streamer', 'streamer'], ['mod+sub', 'mod + sub'], ['vip+sub', 'vip + sub']] },
+          { key: 'text', type: 'textarea', label: 'message', rows: 2 }
+        ] }
+    ],
+    render: function (s) {
+      var emotes = {};
+      (s.emotes || []).forEach(function (e) { if (e.code && e.image) emotes[e.code] = e.image; });
+      var chat = (s.chat || []).map(function (c) {
+        var words = String(c.text || '').split(/(\s+)/).map(function (w) {
+          if (emotes[w]) return '<img class="tv-emote" src="' + emotes[w] + '" alt="">';
+          return esc(w).replace(/^@[\w]+/, function (m) { return '<b class="tv-at">' + m + '</b>'; });
+        }).join('');
+        var badges = (c.badge || 'none').split('+').map(function (b) { return TW_BADGE[b] ? '<span class="tv-badge">' + TW_BADGE[b] + '</span>' : ''; }).join('');
+        return '<div class="tv-msg">' + badges + '<b class="tv-name" style="color:' + esc(c.color) + '">' + esc(c.name) + '</b><span class="tv-colon">: </span>' + words + '</div>';
+      }).join('');
+      var cam = s.cam ? '<img class="tv-cam c-' + s.camCorner + (s.camBorder ? ' bordered' : '') + '" style="width:' + s.camSize + '%" src="' + s.cam + '" alt="">' : '';
+      // the goal sits right under the cam (or right above it when the cam is on the bottom)
+      var goal = '';
+      if (s.goalText || s.goalMax) {
+        var corner = s.camCorner || 'bottomright', w = s.cam ? +s.camSize : 30, off = s.cam ? w * 16 / 12 : 0;
+        var left = /left$/.test(corner);
+        var pos = (corner.indexOf('top') === 0 ? 'top:' : 'bottom:') + off + '%;' + (left ? 'left:0;' : 'right:0;') + 'width:' + Math.max(w, 22) + '%;';
+        var now = parseFloat(String(s.goalNow).replace(/,/g, '')), max = parseFloat(String(s.goalMax).replace(/,/g, ''));
+        var pct = max > 0 ? Math.max(0, Math.min(100, (now || 0) / max * 100)) : -1;
+        var fam = "'" + s.goalFont + "', 'Noto Color Emoji', sans-serif";
+        goal = '<div class="tv-goal' + (s.goalBox ? ' boxed' : '') + (left ? '' : ' r') + '" style="' + pos + 'font-family:' + fam + ';font-size:' + s.goalSize + 'px;color:' + s.goalColor + '">' +
+          (s.goalText ? '<div class="tv-goaltext">' + esc(s.goalText) + '</div>' : '') +
+          (pct >= 0 ? '<div class="tv-goalbar"><i style="width:' + pct + '%;background:' + s.goalBar + '"></i><span>' + esc(s.goalNow || '0') + ' / ' + esc(s.goalMax) + '</span></div>' : '') + '</div>';
+      }
+      var overlay = s.chatMode === 'overlay';
+      var chatBox = '<div class="tv-chat' + (overlay ? ' over' : '') + '" style="--op:' + (s.chatOpacity == null ? 100 : s.chatOpacity) + '%">' +
+        (overlay ? '' : '<div class="tv-chathead">STREAM CHAT</div>') + '<div class="tv-msgs">' + chat + '</div>' +
+        (overlay ? '' : '<div class="tv-input"><span>Send a message</span></div><div class="tv-chatbtns"><span class="tv-chatbtn">Chat</span></div>') + '</div>';
+      return '<div class="shot tv t-' + s.theme + (overlay ? ' overlay' : '') + '"><div class="tv-left">' +
+        '<div class="tv-video">' + (s.stream ? '<img class="tv-screen" src="' + s.stream + '" alt="">' : '') + cam + goal + (overlay ? chatBox : '') + '</div>' +
+        '<div class="tv-info"><div class="tv-ava-wrap' + (s.live ? ' live' : '') + '">' + ava(s.avatar, s.name, 'tv-ava') + (s.live ? '<span class="tv-livebadge">LIVE</span>' : '') + '</div>' +
+        '<div class="tv-meta"><div class="tv-name-row"><b>' + esc(s.name) + '</b>' + (s.name ? '<span class="tv-check">' + ICON.verified + '</span>' : '') + '</div>' +
+        '<div class="tv-title">' + esc(s.title) + '</div>' +
+        '<div class="tv-cat">' + esc(s.category) + '</div></div>' +
+        '<div class="tv-right-meta"><div class="tv-btns"><span class="tv-follow">' + I.heart + 'Follow</span><span class="tv-sub">' + ICON.verified.replace('<svg', '<svg class="tv-star"') + 'Subscribe</span></div>' +
+        '<div class="tv-stats">' + (s.viewers ? '<span class="tv-viewers">' + stroke('M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5', 2) + esc(s.viewers) + '</span>' : '') +
+        (s.uptime ? '<span>' + esc(s.uptime) + '</span>' : '') + '</div></div></div></div>' +
+        (overlay ? '' : chatBox) + '</div>';
+    }
+  });
+
   /* tab order */
-  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'youtube', 'reddit', 'facebook', 'pinterest', 'whisper','snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
+  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'twitch', 'youtube', 'reddit', 'facebook', 'pinterest', 'whisper','snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
   TOOLS.sort(function (a, b) { return ORDER.indexOf(a.id) - ORDER.indexOf(b.id); });
 })();

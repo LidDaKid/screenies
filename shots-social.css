@@ -542,3 +542,97 @@
 }
 .wh-evil { z-index: 2; pointer-events: none; }
 .wh-span { cursor: move; user-select: none; touch-action: none; }
+
+/* tiktok with the video still showing above the comments */
+.tt-solo { width: 390px; }
+.tt-phone { width: 390px; background: #000; color: #fff; }
+.tt-phone .sbar { position: absolute; top: 0; left: 0; right: 0; z-index: 2; text-shadow: 0 1px 2px rgba(0, 0, 0, .4); }
+.tt-vid { position: relative; height: 330px; overflow: hidden; }
+.tt-vid img { width: 100%; height: 100%; object-fit: cover; }
+.tt-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255, 255, 255, .3); }
+.tt-prog i { position: absolute; left: 0; top: 0; bottom: 0; background: #fff; }
+.tt-prog b { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; }
+.tt-phone .tt { position: relative; }
+
+/* ============ twitch ============ */
+
+.tv {
+  width: 1120px;
+  display: flex;
+  font-family: Inter, 'Roobert', 'Noto Color Emoji', sans-serif;
+  --bg: #0e0e10; --fg: #efeff1; --sub: #adadb8; --panel: #18181b; --line: #2f2f35; --field: #26262c;
+  background: var(--bg);
+  color: var(--fg);
+}
+.tv.t-light { --bg: #f7f7f8; --fg: #0e0e10; --sub: #53535f; --panel: #fff; --line: #e6e6ea; --field: #eaeaef; }
+.tv-left { flex: 1; min-width: 0; }
+.tv-video { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+.tv-screen { width: 100%; height: 100%; object-fit: cover; }
+.tv-cam { position: absolute; aspect-ratio: 4 / 3; object-fit: cover; }
+.tv-cam.bordered { border: 3px solid #9147ff; }
+.tv-cam.c-topleft { top: 0; left: 0; }
+.tv-cam.c-topright { top: 0; right: 0; }
+.tv-cam.c-bottomleft { bottom: 0; left: 0; }
+.tv-cam.c-bottomright { bottom: 0; right: 0; }
+.tv-info { display: flex; gap: 14px; padding: 16px 20px 18px; }
+.tv-ava-wrap { position: relative; flex: none; width: 64px; height: 64px; padding: 3px; border-radius: 50%; }
+.tv-ava-wrap.live { background: #eb0400; }
+.tv-ava { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; font-size: 24px; border: 2px solid var(--bg); }
+.tv-livebadge { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); padding: 0 5px; border-radius: 4px; background: #eb0400; color: #fff; font-size: 12px; font-weight: 700; line-height: 17px; }
+.tv-meta { flex: 1; min-width: 0; }
+.tv-name-row { display: flex; align-items: center; gap: 5px; font-size: 18px; }
+.tv-name-row b { font-weight: 700; }
+.tv-check { color: #bf94ff; }
+.tv-check svg { width: 17px; height: 17px; }
+.tv-title { margin-top: 4px; font-size: 14px; font-weight: 600; overflow-wrap: break-word; }
+.tv-cat { margin-top: 3px; font-size: 14px; color: #bf94ff; }
+.tv.t-light .tv-cat, .tv.t-light .tv-check { color: #8205b4; }
+.tv-right-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.tv-btns { display: flex; gap: 8px; }
+.tv-follow, .tv-sub { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+.tv-follow { background: #9147ff; color: #fff; }
+.tv-sub { background: var(--field); }
+.tv-follow svg, .tv-sub svg { width: 16px; height: 16px; }
+.tv-stats { display: flex; gap: 14px; font-size: 14px; color: var(--sub); }
+.tv-viewers { display: flex; align-items: center; gap: 4px; color: #ff8280; font-weight: 600; }
+.tv.t-light .tv-viewers { color: #eb0400; }
+.tv-viewers svg { width: 17px; height: 17px; }
+
+.tv-chat { width: 340px; flex: none; display: flex; flex-direction: column; background: color-mix(in srgb, var(--panel) var(--op, 100%), transparent); border-left: 1px solid var(--line); }
+.tv.overlay { width: 820px; }
+.tv-chat.over { position: absolute; top: 0; right: 0; bottom: 0; width: 34%; border: 0; background: color-mix(in srgb, #000 var(--op, 60%), transparent); color: #fff; }
+.tv-chat.over .tv-msg { padding: 4px 14px; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+.tv-goal { position: absolute; z-index: 2; padding: 6px 10px; line-height: 1.2; }
+.tv-goal.r { text-align: right; }
+.tv-goal.boxed { background: rgba(0, 0, 0, .55); }
+.tv-goaltext { overflow-wrap: break-word; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+.tv-goalbar { position: relative; height: 1.5em; margin-top: 5px; border-radius: 4px; background: rgba(255, 255, 255, .22); overflow: hidden; font-size: .75em; }
+.tv-goalbar i { position: absolute; left: 0; top: 0; bottom: 0; }
+.tv-goalbar span { position: relative; display: flex; height: 100%; align-items: center; justify-content: center; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.tv-chathead { padding: 14px 0 12px; text-align: center; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--line); }
+.tv-msgs { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 0; }
+.tv-msg { padding: 5px 20px; font-size: 13.5px; line-height: 20px; overflow-wrap: break-word; }
+.tv-badge { display: inline-block; vertical-align: middle; margin: -2px 4px 0 0; }
+.tv-badge svg { width: 18px; height: 18px; }
+.tv-name { font-weight: 700; }
+.tv-msg .tv-emote { display: inline-block; vertical-align: middle; width: 28px; height: 28px; margin: -5px 0; object-fit: contain; }
+.tv-at { font-weight: 700; }
+.tv-input { margin: 4px 10px 0; padding: 10px 12px; border-radius: 6px; background: var(--field); color: var(--sub); font-size: 13px; }
+.tv-chatbtns { display: flex; justify-content: flex-end; padding: 10px 10px 12px; }
+.tv-chatbtn { padding: 6px 12px; border-radius: 4px; background: #9147ff; color: #fff; font-size: 13px; font-weight: 600; }
+
+/* youtube video card */
+.yt-video { margin-bottom: 24px; }
+.yt-video + .yt-head { padding-top: 4px; }
+.yt-thumb { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: var(--chip); }
+.yt-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.yt-dur { position: absolute; right: 8px; bottom: 8px; padding: 1px 5px; border-radius: 4px; background: rgba(0, 0, 0, .8); color: #fff; font-size: 12px; font-weight: 500; line-height: 18px; }
+.yt-watched { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255, 255, 255, .45); }
+.yt-watched i { display: block; height: 100%; background: #ff0033; }
+.yt-watched ~ .yt-dur, .yt-thumb:has(.yt-watched) .yt-dur { bottom: 12px; }
+.yt-vinfo { display: flex; gap: 12px; margin-top: 12px; }
+.yt-vava { width: 36px; height: 36px; flex: none; border-radius: 50%; object-fit: cover; font-size: 15px; }
+.yt-vtext { flex: 1; min-width: 0; }
+.yt-vtitle { font-size: 16px; font-weight: 500; line-height: 22px; overflow-wrap: break-word; }
+.yt-vsub { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 14px; line-height: 20px; color: var(--sub); }
+.yt-check svg { width: 14px; height: 14px; }
