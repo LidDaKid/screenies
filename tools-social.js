@@ -1,0 +1,699 @@
+/* screenies — the social ones: instagram comments + dms, tiktok, youtube, reddit, facebook, snapchat */
+
+(function () {
+  var esc = U.esc, br = U.br, ava = U.avatar;
+
+  function tags(t, cls) {
+    return br(t).replace(/(^|[\s>(])([@#][\w.À-￿]+)/g, '$1<span class="' + cls + '">$2</span>');
+  }
+  function stroke(d, w) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 1.9) + '" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg>';
+  }
+  function flip(svg) { return svg.replace('<path', '<path transform="rotate(180 12 12)"'); }
+
+  var I = {
+    back: stroke('M20 12H4.5M11 5l-7 7 7 7', 2.1),
+    phone: stroke('M5.2 3.5h3.3l1.7 4.3-2.2 1.4a12 12 0 0 0 6.8 6.8l1.4-2.2 4.3 1.7v3.3a1.7 1.7 0 0 1-1.8 1.7A17 17 0 0 1 3.5 5.3a1.7 1.7 0 0 1 1.7-1.8z'),
+    video: stroke('M3 7.5A1.5 1.5 0 0 1 4.5 6h10A1.5 1.5 0 0 1 16 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 3 16.5zM16 10.5l5-3v9l-5-3'),
+    image: stroke('M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5zM4 16l4.5-4.5 4 4L15 13l5 5M15.5 9.5h.01'),
+    sticker: stroke('M20.5 12A8.5 8.5 0 1 1 12 3.5M20.5 12h-4.5a4 4 0 0 0-4 4v4.5M20.5 12A8.5 8.5 0 0 0 12 3.5M9 10h.01M15 10h.01'),
+    mic: stroke('M12 3.5a2.8 2.8 0 0 1 2.8 2.8v5.4a2.8 2.8 0 0 1-5.6 0V6.3A2.8 2.8 0 0 1 12 3.5zM6 11.5a6 6 0 0 0 12 0M12 17.5v3'),
+    camera: '<svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.4-2h5.6l1.4 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.8" r="3.3" fill="#fff"/></svg>',
+    heart: stroke('M12 20.5S3 15 3 9a4.8 4.8 0 0 1 9-2.4A4.8 4.8 0 0 1 21 9c0 6-9 11.5-9 11.5z'),
+    heartFull: '<svg viewBox="0 0 24 24"><path d="M12 20.5S3 15 3 9a4.8 4.8 0 0 1 9-2.4A4.8 4.8 0 0 1 21 9c0 6-9 11.5-9 11.5z"/></svg>',
+    thumb: stroke('M7.5 10.5v9.5M7.5 10.5 11 3.5c1.4 0 2.4 1.2 2.2 2.6L12.8 9h5.4a2 2 0 0 1 2 2.4l-1.4 6.9A2 2 0 0 1 16.8 20H7.5M3.5 10.5h4V20h-4z', 1.7),
+    bubble: stroke('M12 3.5c5 0 9 3.4 9 7.8S17 19 12 19c-1 0-2-.1-2.9-.4L4 21l1.5-4.1C4 15.4 3 13.4 3 11.3 3 6.9 7 3.5 12 3.5z', 1.7),
+    share: stroke('M14 4.5 21 11l-7 6.5V14c-5 0-8.5 1.5-11 5.5 1-5.5 4-10 11-11z', 1.7),
+    send: stroke('M21 3 3 10.5l7 2.8L21 3zM21 3l-7.7 18-3.3-7.7'),
+    up: stroke('M12 3.8 4.5 12.5H9V20h6v-7.5h4.5z', 1.6),
+    upFull: '<svg viewBox="0 0 24 24"><path d="M12 3.8 4.5 12.5H9V20h6v-7.5h4.5z"/></svg>',
+    globe: stroke('M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z', 1.6),
+    friends: stroke('M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.5c2 .6 3.3 2.4 3.5 5.5', 1.6),
+    pin: stroke('M9 3.5h6l-1 6 3.5 3.5v1h-11v-1L10 9.5zM12 14v6.5', 1.7),
+    sort: stroke('M4 7h16M4 12h11M4 17h6', 2),
+    x: stroke('M6 6l12 12M18 6 6 18', 2),
+    dots: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+    at: stroke('M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1'),
+    smile: stroke('M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.5 14.5c1 1.2 2.1 1.8 3.5 1.8s2.5-.6 3.5-1.8M9 9.5h.01M15 9.5h.01'),
+    down: stroke('M6 9.5l6 6 6-6', 2),
+    chevron: stroke('M15 5l-7 7 7 7', 2.4),
+    snapCam: stroke('M4 8.5A1.5 1.5 0 0 1 5.5 7h2.3l1.4-2h5.6l1.4 2h2.3A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5zM12 16a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z', 1.8)
+  };
+  var BADGE = '<span class="vbadge">' + ICON.verified + '</span>';
+
+  function item(defs) { return function () { return JSON.parse(JSON.stringify(defs)); }; }
+
+  /* ============================== instagram comments ============================== */
+
+  var IGC_NEW = { avatar: '', user: '', badge: false, text: '', time: '', likes: '', liked: false, reply: false, more: '' };
+
+  TOOLS.push({
+    id: 'igcomments',
+    label: 'ig comments',
+    defaults: {
+      theme: 'light', head: true, input: true, me: '',
+      list: []
+    },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'head', type: 'toggle', label: 'top' },
+        { key: 'input', type: 'toggle', label: 'comment bar' }
+      ] },
+      { key: 'me', type: 'image', label: 'your pfp (comment bar)', max: 200 },
+      { type: 'head', label: 'comments' },
+      { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item(IGC_NEW) }], item: [
+        { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+        { type: 'row', fields: [
+          { key: 'user', type: 'text', label: 'username' },
+          { key: 'badge', type: 'toggle', label: 'check' }
+        ] },
+        { key: 'text', type: 'textarea', label: 'comment', rows: 2 },
+        { type: 'row', fields: [
+          { key: 'time', type: 'text', label: 'time' },
+          { key: 'likes', type: 'text', label: 'likes' },
+          { key: 'more', type: 'text', label: 'more replies' }
+        ] },
+        { type: 'row', fields: [
+          { key: 'liked', type: 'toggle', label: 'liked' },
+          { key: 'reply', type: 'toggle', label: 'is a reply' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var out = (s.list || []).map(function (c) {
+        return '<div class="igc-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'igc-ava') +
+          '<div class="igc-main"><div class="igc-top"><b>' + esc(c.user) + '</b>' + (c.badge ? BADGE : '') +
+          '<span>' + esc(c.time) + '</span></div>' +
+          '<div class="igc-text">' + tags(c.text, 'igc-at') + '</div>' +
+          '<div class="igc-sub">Reply</div>' +
+          (c.more ? '<div class="igc-more"><i></i>View ' + esc(c.more) + ' more ' + (c.more === '1' ? 'reply' : 'replies') + '</div>' : '') +
+          '</div><div class="igc-like' + (c.liked ? ' on' : '') + '">' + (c.liked ? I.heartFull : I.heart) +
+          (c.likes ? '<span>' + esc(c.likes) + '</span>' : '') + '</div></div>';
+      }).join('');
+      return '<div class="shot igc t-' + s.theme + '">' +
+        (s.head ? '<div class="igc-head"><i></i><b>Comments</b></div>' : '') +
+        '<div class="igc-list">' + out + '</div>' +
+        (s.input ? '<div class="igc-input"><div class="igc-emo">❤️🙌🔥👏😢😍😮😂</div>' +
+          '<div class="igc-bar">' + ava(s.me, '', 'igc-ava me') + '<span>Add a comment…</span>' + I.send + '</div></div>' : '') +
+        '</div>';
+    }
+  });
+
+  /* ============================== instagram dms ============================== */
+
+  TOOLS.push({
+    id: 'igdm',
+    label: 'ig dms',
+    defaults: {
+      clock: '9:41', battery: 70, showPct: false, theme: 'light', bubble: 'blue',
+      name: '', sub: '', photo: '', seen: '',
+      msgs: []
+    },
+    fields: [
+      { type: 'head', label: 'phone' },
+      U.STATUS_FIELDS,
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'bubble', type: 'select', label: 'my bubbles', options: [['blue', 'blue'], ['purple', 'purple']] }
+      ] },
+      { type: 'head', label: 'them' },
+      { key: 'photo', type: 'image', label: 'pfp', max: 300 },
+      { type: 'row', fields: [
+        { key: 'name', type: 'text', label: 'name' },
+        { key: 'sub', type: 'text', label: 'under name' }
+      ] },
+      { type: 'head', label: 'messages' },
+      { key: 'msgs', type: 'list', meKey: 'from',
+        adds: [
+          { label: '+ me', item: item({ from: 'me', text: '', image: '', stamp: '', react: '' }) },
+          { label: '+ them', item: item({ from: 'them', text: '', image: '', stamp: '', react: '' }) }
+        ],
+        item: [
+          { key: 'from', type: 'select', label: 'from', options: [['me', 'me'], ['them', 'them']] },
+          { key: 'text', type: 'textarea', label: 'text', rows: 2 },
+          { key: 'image', type: 'image', label: 'picture', max: 900 },
+          { type: 'row', fields: [
+            { key: 'stamp', type: 'text', label: 'time above' },
+            { key: 'react', type: 'text', label: 'reaction' }
+          ] }
+        ] },
+      { key: 'seen', type: 'text', label: 'under last sent', placeholder: 'Seen' }
+    ],
+    render: function (s) {
+      var list = s.msgs || [], lastMe = -1, out = '';
+      list.forEach(function (m, i) { if (m.from === 'me') lastMe = i; });
+      list.forEach(function (m, i) {
+        var prev = list[i - 1], next = list[i + 1];
+        var joinUp = prev && prev.from === m.from && !m.stamp;
+        var joinDown = next && next.from === m.from && !next.stamp;
+        var who = m.from === 'me' ? 'me' : 'them';
+        if (m.stamp) out += '<div class="igd-stamp">' + esc(m.stamp) + '</div>';
+        var big = U.isEmojiOnly(m.text) && !m.image;
+        var body = (m.image ? '<img class="igd-pic" src="' + m.image + '" alt="">' : '') +
+          (m.text ? '<div class="igd-b' + (big ? ' emoji' : '') + (joinUp ? ' up' : '') + (joinDown ? ' down' : '') + '">' + br(m.text) + '</div>' : '');
+        out += '<div class="igd-row ' + who + (joinUp ? '' : ' gap') + (m.react ? ' reacted' : '') + '">' +
+          (who === 'them' ? (joinDown ? '<div class="igd-ava sp"></div>' : ava(s.photo, s.name, 'igd-ava')) : '') +
+          '<div class="igd-col">' + body + (m.react ? '<span class="igd-react">' + esc(m.react) + '</span>' : '') + '</div></div>';
+        if (i === lastMe && s.seen && !(next && next.from === 'me')) out += '<div class="igd-seen">' + esc(s.seen) + '</div>';
+      });
+      return '<div class="shot igd t-' + s.theme + ' b-' + s.bubble + '">' + U.statusBar(s) +
+        '<div class="igd-head"><span class="igd-ic">' + I.back + '</span>' + ava(s.photo, s.name, 'igd-hava') +
+        '<div class="igd-who"><b>' + esc(s.name) + '</b><span>' + esc(s.sub) + '</span></div>' +
+        '<span class="igd-ic">' + I.phone + '</span><span class="igd-ic">' + I.video + '</span></div>' +
+        '<div class="igd-body">' + out + '</div>' +
+        '<div class="igd-input"><span class="igd-cam">' + I.camera + '</span><span class="igd-ph">Message…</span>' +
+        '<span class="igd-ic">' + I.mic + '</span><span class="igd-ic">' + I.image + '</span><span class="igd-ic">' + I.sticker + '</span></div></div>';
+    }
+  });
+
+  /* ============================== tiktok comments ============================== */
+
+  TOOLS.push({
+    id: 'tiktok',
+    label: 'tiktok',
+    defaults: {
+      theme: 'light', count: '',
+      list: []
+    },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'count', type: 'text', label: 'comment count' }
+      ] },
+      { type: 'head', label: 'comments' },
+      { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', user: '', creator: false, text: '', time: '', likes: '', liked: false, reply: false, more: '' }) }], item: [
+        { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+        { key: 'user', type: 'text', label: 'username' },
+        { key: 'text', type: 'textarea', label: 'comment', rows: 2 },
+        { type: 'row', fields: [
+          { key: 'time', type: 'text', label: 'time' },
+          { key: 'likes', type: 'text', label: 'likes' },
+          { key: 'more', type: 'text', label: 'replies' }
+        ] },
+        { type: 'row', fields: [
+          { key: 'liked', type: 'toggle', label: 'liked' },
+          { key: 'creator', type: 'toggle', label: 'creator' },
+          { key: 'reply', type: 'toggle', label: 'is a reply' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var out = (s.list || []).map(function (c) {
+        return '<div class="tt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'tt-ava') +
+          '<div class="tt-main"><div class="tt-user">' + esc(c.user) + (c.creator ? '<span class="tt-creator">Creator</span>' : '') + '</div>' +
+          '<div class="tt-text">' + tags(c.text, 'tt-at') + '</div>' +
+          '<div class="tt-sub"><span>' + esc(c.time) + '</span><b>Reply</b></div>' +
+          (c.more ? '<div class="tt-more"><i></i>View ' + esc(c.more) + ' ' + (c.more === '1' ? 'reply' : 'replies') + I.down + '</div>' : '') +
+          '</div><div class="tt-like' + (c.liked ? ' on' : '') + '">' + (c.liked ? I.heartFull : I.heart) +
+          '<span>' + esc(c.likes) + '</span></div></div>';
+      }).join('');
+      return '<div class="shot tt t-' + s.theme + '"><div class="tt-head"><span></span><b>' + esc(s.count) + ' comments</b>' + I.x + '</div>' +
+        '<div class="tt-list">' + out + '</div>' +
+        '<div class="tt-input"><span>Add comment…</span>' + I.at + I.smile + '</div></div>';
+    }
+  });
+
+  /* ============================== youtube comments ============================== */
+
+  TOOLS.push({
+    id: 'youtube',
+    label: 'youtube',
+    defaults: {
+      theme: 'dark', count: '', channel: '', channelAvatar: '',
+      list: []
+    },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'count', type: 'text', label: 'comment count' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'channel', type: 'text', label: 'channel @' },
+        { key: 'channelAvatar', type: 'image', label: 'channel pfp', max: 200 }
+      ] },
+      { type: 'head', label: 'comments' },
+      { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', handle: '', time: '', text: '', likes: '', pinned: false, hearted: false, creator: false, reply: false, replies: '' }) }], item: [
+        { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+        { type: 'row', fields: [
+          { key: 'handle', type: 'text', label: '@' },
+          { key: 'time', type: 'text', label: 'time' }
+        ] },
+        { key: 'text', type: 'textarea', label: 'comment', rows: 2 },
+        { type: 'row', fields: [
+          { key: 'likes', type: 'text', label: 'likes' },
+          { key: 'replies', type: 'text', label: 'replies' }
+        ] },
+        { type: 'row', fields: [
+          { key: 'pinned', type: 'toggle', label: 'pinned' },
+          { key: 'hearted', type: 'toggle', label: 'heart' },
+          { key: 'creator', type: 'toggle', label: 'channel' },
+          { key: 'reply', type: 'toggle', label: 'reply' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var out = (s.list || []).map(function (c) {
+        var handle = c.creator ? '<span class="yt-owner">' + esc(c.handle) + '</span>' : '<b>' + esc(c.handle) + '</b>';
+        return '<div class="yt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.creator ? (c.avatar || s.channelAvatar) : c.avatar, c.handle, 'yt-ava') +
+          '<div class="yt-main">' +
+          (c.pinned ? '<div class="yt-pin">' + I.pin + 'Pinned by ' + esc(s.channel) + '</div>' : '') +
+          '<div class="yt-top">' + handle + '<span>' + esc(c.time) + '</span></div>' +
+          '<div class="yt-text">' + tags(c.text, 'yt-at') + '</div>' +
+          '<div class="yt-acts"><span class="yt-ic">' + I.thumb + '</span><span class="yt-n">' + esc(c.likes) + '</span>' +
+          '<span class="yt-ic">' + flip(I.thumb) + '</span>' +
+          (c.hearted ? '<span class="yt-heart">' + ava(s.channelAvatar, s.channel, 'yt-hava') + '<i>' + I.heartFull + '</i></span>' : '') +
+          '<b class="yt-reply">Reply</b></div>' +
+          (c.replies ? '<div class="yt-replies">' + I.down + esc(c.replies) + ' ' + (c.replies === '1' ? 'reply' : 'replies') + '</div>' : '') +
+          '</div><span class="yt-dots">' + I.dots + '</span></div>';
+      }).join('');
+      return '<div class="shot yt t-' + s.theme + '"><div class="yt-head"><b>' + esc(s.count) + ' Comments</b>' +
+        '<span class="yt-sort">' + I.sort + 'Sort by</span></div>' + out + '</div>';
+    }
+  });
+
+  /* ============================== reddit ============================== */
+
+  TOOLS.push({
+    id: 'reddit',
+    label: 'reddit',
+    defaults: {
+      theme: 'light', sub: '', subIcon: '', user: '', time: '',
+      title: '', flair: '',
+      body: '', image: '',
+      votes: '', comments: '', voted: 'none',
+      list: []
+    },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'voted', type: 'select', label: 'your vote', options: [['none', 'none'], ['up', 'up'], ['down', 'down']] }
+      ] },
+      { type: 'head', label: 'post' },
+      { type: 'row', fields: [
+        { key: 'sub', type: 'text', label: 'r/' },
+        { key: 'subIcon', type: 'image', label: 'sub icon', max: 200 }
+      ] },
+      { type: 'row', fields: [
+        { key: 'user', type: 'text', label: 'u/' },
+        { key: 'time', type: 'text', label: 'time' }
+      ] },
+      { key: 'title', type: 'textarea', label: 'title', rows: 2 },
+      { key: 'flair', type: 'text', label: 'flair' },
+      { key: 'body', type: 'textarea', label: 'text', rows: 3 },
+      { key: 'image', type: 'image', label: 'picture', max: 1200 },
+      { type: 'row', fields: [
+        { key: 'votes', type: 'text', label: 'votes' },
+        { key: 'comments', type: 'text', label: 'comments' }
+      ] },
+      { type: 'head', label: 'comments' },
+      { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', user: '', time: '', text: '', votes: '', depth: '0', op: false }) }], item: [
+        { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+        { type: 'row', fields: [
+          { key: 'user', type: 'text', label: 'u/' },
+          { key: 'time', type: 'text', label: 'time' }
+        ] },
+        { key: 'text', type: 'textarea', label: 'comment', rows: 2 },
+        { type: 'row', fields: [
+          { key: 'votes', type: 'text', label: 'votes' },
+          { key: 'depth', type: 'select', label: 'indent', options: [['0', '0'], ['1', '1'], ['2', '2'], ['3', '3']] },
+          { key: 'op', type: 'toggle', label: 'OP' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var voted = s.voted === 'up' ? ' up' : s.voted === 'down' ? ' down' : '';
+      var comments = (s.list || []).map(function (c) {
+        var d = parseInt(c.depth, 10) || 0, lines = '';
+        for (var k = 0; k < d; k++) lines += '<i style="left:' + (12 + k * 28) + 'px"></i>';
+        return '<div class="rd-c" style="padding-left:' + (d * 28) + 'px">' + lines +
+          '<div class="rd-ctop">' + ava(c.avatar, c.user, 'rd-cava') + '<b>' + esc(c.user) + '</b>' +
+          (c.op ? '<span class="rd-op">OP</span>' : '') + (c.time ? '<span>· ' + esc(c.time) + '</span>' : '') + '</div>' +
+          '<div class="rd-ctext">' + br(c.text) + '</div>' +
+          '<div class="rd-cacts"><span class="rd-ic">' + I.up + '</span><b>' + esc(c.votes) + '</b><span class="rd-ic">' + flip(I.up) + '</span>' +
+          '<span class="rd-ic">' + I.bubble + '</span><b>Reply</b><span class="rd-ic">' + I.dots + '</span></div></div>';
+      }).join('');
+      return '<div class="shot rd t-' + s.theme + '">' +
+        '<div class="rd-head">' + ava(s.subIcon, s.sub, 'rd-sava', '#ff4500') +
+        '<div class="rd-who"><div><b>r/' + esc(s.sub) + '</b>' + (s.time ? ' <span>· ' + esc(s.time) + '</span>' : '') + '</div>' + (s.user ? '<span>u/' + esc(s.user) + '</span>' : '') + '</div>' +
+        '<span class="rd-join">Join</span><span class="rd-ic">' + I.dots + '</span></div>' +
+        '<div class="rd-title">' + br(s.title) + '</div>' +
+        (s.flair ? '<span class="rd-flair">' + esc(s.flair) + '</span>' : '') +
+        (s.body ? '<div class="rd-body">' + br(s.body) + '</div>' : '') +
+        (s.image ? '<img class="rd-img" src="' + s.image + '" alt="">' : '') +
+        '<div class="rd-acts"><span class="rd-pill vote' + voted + '"><span class="rd-ic">' + (s.voted === 'up' ? I.upFull : I.up) + '</span><b>' + esc(s.votes) + '</b>' +
+        '<span class="rd-ic">' + flip(s.voted === 'down' ? I.upFull : I.up) + '</span></span>' +
+        '<span class="rd-pill"><span class="rd-ic">' + I.bubble + '</span><b>' + esc(s.comments) + '</b></span>' +
+        '<span class="rd-pill"><span class="rd-ic">' + I.share + '</span><b>Share</b></span></div>' +
+        (comments ? '<div class="rd-comments">' + comments + '</div>' : '') + '</div>';
+    }
+  });
+
+  /* ============================== facebook ============================== */
+
+  TOOLS.push({
+    id: 'facebook',
+    label: 'facebook',
+    defaults: {
+      theme: 'light', avatar: '', name: '', badge: false, time: '', audience: 'public',
+      text: '', image: '',
+      reactions: '👍❤️', reactCount: '', comments: '', shares: '',
+      list: []
+    },
+    fields: [
+      { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+      { key: 'avatar', type: 'image', label: 'pfp', max: 300 },
+      { type: 'row', fields: [
+        { key: 'name', type: 'text', label: 'name' },
+        { key: 'badge', type: 'toggle', label: 'check' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'time', type: 'text', label: 'time' },
+        { key: 'audience', type: 'select', label: 'who sees it', options: [['public', 'public'], ['friends', 'friends']] }
+      ] },
+      { key: 'text', type: 'textarea', label: 'post', rows: 3 },
+      { key: 'image', type: 'image', label: 'picture', max: 1200 },
+      { type: 'row', fields: [
+        { key: 'reactions', type: 'text', label: 'reactions' },
+        { key: 'reactCount', type: 'text', label: 'count' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'comments', type: 'text', label: 'comments' },
+        { key: 'shares', type: 'text', label: 'shares' }
+      ] },
+      { type: 'head', label: 'comments' },
+      { key: 'list', type: 'list', adds: [{ label: '+ comment', item: item({ avatar: '', name: '', text: '', time: '', likes: '' }) }], item: [
+        { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+        { key: 'name', type: 'text', label: 'name' },
+        { key: 'text', type: 'textarea', label: 'comment', rows: 2 },
+        { type: 'row', fields: [
+          { key: 'time', type: 'text', label: 'time' },
+          { key: 'likes', type: 'text', label: 'likes' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var emo = (String(s.reactions || '').match(/\p{Extended_Pictographic}️?/gu) || []).slice(0, 3);
+      var bigText = s.text && !s.image && s.text.length <= 85 && s.text.indexOf('\n') < 0;
+      var comments = (s.list || []).map(function (c) {
+        return '<div class="fb-c">' + ava(c.avatar, c.name, 'fb-cava') + '<div class="fb-cmain">' +
+          '<div class="fb-bub"><b>' + esc(c.name) + '</b><div>' + br(c.text) + '</div>' +
+          (c.likes ? '<span class="fb-clikes"><i>👍</i>' + esc(c.likes) + '</span>' : '') + '</div>' +
+          '<div class="fb-csub"><span>' + esc(c.time) + '</span><b>Like</b><b>Reply</b></div></div></div>';
+      }).join('');
+      var counts = [s.comments ? '<span>' + esc(s.comments) + ' comments</span>' : '', s.shares ? '<span>' + esc(s.shares) + ' shares</span>' : ''].join('');
+      return '<div class="shot fb t-' + s.theme + '">' +
+        '<div class="fb-head">' + ava(s.avatar, s.name, 'fb-ava') + '<div class="fb-who"><div class="fb-name"><b>' + esc(s.name) + '</b>' + (s.badge ? BADGE : '') + '</div>' +
+        '<div class="fb-time">' + (s.time ? esc(s.time) + ' · ' : '') + '<span class="fb-aud">' + (s.audience === 'friends' ? I.friends : I.globe) + '</span></div></div>' +
+        '<span class="fb-ic">' + I.dots + '</span><span class="fb-ic">' + I.x + '</span></div>' +
+        (s.text ? '<div class="fb-text' + (bigText ? ' big' : '') + '">' + br(s.text) + '</div>' : '') +
+        (s.image ? '<img class="fb-img" src="' + s.image + '" alt="">' : '') +
+        ((emo.length || counts) ? '<div class="fb-stats"><span class="fb-reacts">' + emo.map(function (e) { return '<i>' + e + '</i>'; }).join('') +
+          (s.reactCount ? '<span>' + esc(s.reactCount) + '</span>' : '') + '</span><span class="fb-counts">' + counts + '</span></div>' : '') +
+        '<div class="fb-acts"><span>' + I.thumb + 'Like</span><span>' + I.bubble + 'Comment</span><span>' + I.share + 'Share</span></div>' +
+        (comments ? '<div class="fb-comments">' + comments + '</div>' : '') + '</div>';
+    }
+  });
+
+  /* ============================== snapchat ============================== */
+
+  TOOLS.push({
+    id: 'snapchat',
+    label: 'snapchat',
+    defaults: {
+      clock: '9:41', battery: 45, showPct: false, name: '', photo: '', streak: '',
+      msgs: []
+    },
+    fields: [
+      U.STATUS_FIELDS,
+      { key: 'photo', type: 'image', label: 'bitmoji / pfp', max: 300 },
+      { type: 'row', fields: [
+        { key: 'name', type: 'text', label: 'name' },
+        { key: 'streak', type: 'text', label: 'streak' }
+      ] },
+      { type: 'head', label: 'chats' },
+      { key: 'msgs', type: 'list', meKey: 'from',
+        adds: [
+          { label: '+ me', item: item({ from: 'me', text: '', image: '' }) },
+          { label: '+ them', item: item({ from: 'them', text: '', image: '' }) }
+        ],
+        item: [
+          { key: 'from', type: 'select', label: 'from', options: [['me', 'me'], ['them', 'them']] },
+          { key: 'text', type: 'textarea', label: 'text', rows: 2 },
+          { key: 'image', type: 'image', label: 'picture', max: 900 }
+        ] }
+    ],
+    render: function (s) {
+      var out = '', prev = null;
+      (s.msgs || []).forEach(function (m) {
+        var who = m.from === 'me' ? 'me' : 'them';
+        if (who !== prev) out += '<div class="sc-name ' + who + '">' + (who === 'me' ? 'ME' : esc(String(s.name).toUpperCase())) + '</div>';
+        out += '<div class="sc-msg ' + who + '">' + (m.image ? '<img src="' + m.image + '" alt="">' : '') +
+          (m.text ? '<div>' + br(m.text) + '</div>' : '') + '</div>';
+        prev = who;
+      });
+      return '<div class="shot sc">' + U.statusBar(s) +
+        '<div class="sc-head"><span class="sc-ic">' + I.chevron + '</span>' + ava(s.photo, s.name, 'sc-ava') +
+        '<div class="sc-who"><b>' + esc(s.name) + '</b>' + (s.streak ? '<span>' + esc(s.streak) + '</span>' : '') + '</div>' +
+        '<span class="sc-ic">' + I.phone + '</span><span class="sc-ic">' + I.video + '</span></div>' +
+        '<div class="sc-body">' + out + '</div>' +
+        '<div class="sc-input"><span class="sc-cam">' + I.snapCam + '</span><span class="sc-field">Send a chat</span>' +
+        '<span class="sc-ic">' + I.mic + '</span><span class="sc-ic">' + I.smile + '</span><span class="sc-ic">' + I.image + '</span></div></div>';
+    }
+  });
+
+  /* ============================== apple music lyrics ============================== */
+
+  var AM_LOGO = '<svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5.5" fill="#fa2d48"/>' +
+    '<path d="M16.5 5.3v9.4a2.3 2.3 0 1 1-1.4-2.1V8.4l-5.6 1.3v6.6a2.3 2.3 0 1 1-1.4-2.1V7.3z" fill="#fff"/></svg>';
+
+  TOOLS.push({
+    id: 'applemusic',
+    label: 'apple music',
+    defaults: { cover: '', palette: [], title: '', artist: '', lyrics: '', bg: '#3a2a4a', look: 'blur', size: 'm', frame: 'card' },
+    fields: [
+      { key: 'cover', type: 'image', label: 'album cover', max: 600, palette: true },
+      { key: 'title', type: 'text', label: 'song' },
+      { key: 'artist', type: 'text', label: 'artist' },
+      { key: 'lyrics', type: 'textarea', label: 'lyrics', rows: 5 },
+      { key: 'bg', type: 'color', label: 'color', swatches: function (s) { return s.palette; } },
+      { type: 'row', fields: [
+        { key: 'look', type: 'select', label: 'background', options: [['blur', 'blurry cover'], ['color', 'color']] },
+        { key: 'size', type: 'select', label: 'size', options: [['s', 'small'], ['m', 'medium'], ['l', 'big']] },
+        { key: 'frame', type: 'select', label: 'shape', options: [['card', 'card'], ['story', 'story']] }
+      ] }
+    ],
+    render: function (s) {
+      var blur = s.look === 'blur' && s.cover;
+      var bgLayer = blur ? '<img class="am-blur" src="' + s.cover + '" alt=""><div class="am-dim"></div>' : '';
+      var card = '<div class="am-card sz-' + s.size + '" style="background:linear-gradient(160deg,' + U.shade(s.bg, 0.12) + ',' + U.shade(s.bg, -0.45) + ')">' + bgLayer +
+        '<div class="am-in"><div class="am-top">' + (s.cover ? '<img class="am-cover" src="' + s.cover + '" alt="">' : '<div class="am-cover am-noart"></div>') +
+        '<div class="am-meta"><b>' + esc(s.title) + '</b><span>' + esc(s.artist) + '</span></div></div>' +
+        '<div class="am-lyrics">' + br(s.lyrics) + '</div>' +
+        '<div class="am-logo">' + AM_LOGO + '<span>Music</span></div></div></div>';
+      if (s.frame === 'story') {
+        return '<div class="shot am-story" style="background:' + U.shade(s.bg, -0.6) + '">' + (s.cover ? '<img class="am-blur" src="' + s.cover + '" alt=""><div class="am-dim"></div>' : '') + card + '</div>';
+      }
+      return '<div class="shot am-solo">' + card + '</div>';
+    }
+  });
+
+  /* ============================== pinterest ============================== */
+
+  TOOLS.push({
+    id: 'pinterest',
+    label: 'pinterest',
+    defaults: {
+      theme: 'light', image: '', title: '', desc: '', avatar: '', user: '', followers: '',
+      likes: '', comments: '', saved: false, board: ''
+    },
+    fields: [
+      { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+      { key: 'image', type: 'image', label: 'pin picture', max: 1200 },
+      { key: 'title', type: 'text', label: 'title' },
+      { key: 'desc', type: 'textarea', label: 'description', rows: 2 },
+      { key: 'avatar', type: 'image', label: 'pfp', max: 200 },
+      { type: 'row', fields: [
+        { key: 'user', type: 'text', label: 'name' },
+        { key: 'followers', type: 'text', label: 'followers' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'likes', type: 'text', label: 'reactions' },
+        { key: 'comments', type: 'text', label: 'comments' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'board', type: 'text', label: 'board' },
+        { key: 'saved', type: 'toggle', label: 'saved' }
+      ] }
+    ],
+    render: function (s) {
+      return '<div class="shot pn t-' + s.theme + '">' +
+        (s.image ? '<img class="pn-img" src="' + s.image + '" alt="">' : '<div class="pn-img pn-noimg"></div>') +
+        '<div class="pn-bar"><span class="pn-ic">' + I.heart + '</span>' + (s.likes ? '<b>' + esc(s.likes) + '</b>' : '') +
+        '<span class="pn-ic">' + I.bubble + '</span>' + (s.comments ? '<b>' + esc(s.comments) + '</b>' : '') +
+        '<span class="pn-ic">' + I.share + '</span><span class="pn-ic">' + I.dots + '</span><span class="pn-grow"></span>' +
+        (s.board ? '<span class="pn-board">' + esc(s.board) + I.down + '</span>' : '') +
+        '<span class="pn-save' + (s.saved ? ' on' : '') + '">' + (s.saved ? 'Saved' : 'Save') + '</span></div>' +
+        (s.title ? '<div class="pn-title">' + esc(s.title) + '</div>' : '') +
+        (s.desc ? '<div class="pn-desc">' + br(s.desc) + '</div>' : '') +
+        '<div class="pn-user">' + ava(s.avatar, s.user, 'pn-ava') + '<div class="pn-who"><b>' + esc(s.user) + '</b>' +
+        (s.followers ? '<span>' + esc(s.followers) + ' followers</span>' : '') + '</div><span class="pn-follow">Follow</span></div></div>';
+    }
+  });
+
+  /* ============================== ai chats ============================== */
+
+  // **bold**, `code`, blank line = new paragraph, "- " lines = bullets
+  function md(t) {
+    return String(t || '').split(/\n{2,}/).map(function (para) {
+      var lines = para.split('\n');
+      if (lines.every(function (l) { return /^\s*[-*•] /.test(l); })) {
+        return '<ul>' + lines.map(function (l) { return '<li>' + inline(l.replace(/^\s*[-*•] /, '')) + '</li>'; }).join('') + '</ul>';
+      }
+      if (lines.every(function (l) { return /^\s*\d+[.)] /.test(l); })) {
+        return '<ol>' + lines.map(function (l) { return '<li>' + inline(l.replace(/^\s*\d+[.)] /, '')) + '</li>'; }).join('') + '</ol>';
+      }
+      return '<p>' + lines.map(inline).join('<br>') + '</p>';
+    }).join('');
+  }
+  function inline(l) {
+    return esc(l).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+
+  var AI_MSG = [
+    { label: '+ me', item: item({ from: 'me', text: '' }) },
+    { label: '+ ai', item: item({ from: 'ai', text: '' }) }
+  ];
+  var AI_ITEM = [
+    { key: 'from', type: 'select', label: 'from', options: [['me', 'me'], ['ai', 'ai']] },
+    { key: 'text', type: 'textarea', label: 'text', rows: 3 }
+  ];
+  var I_COPY = stroke('M9 9h10.5v10.5H9zM15 9V4.5H4.5V15H9', 1.7);
+  var I_RETRY = stroke('M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4.5H9', 1.7);
+
+  TOOLS.push({
+    id: 'chatgpt',
+    label: 'chatgpt',
+    defaults: { theme: 'light', model: '', input: true, msgs: [] },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'model', type: 'text', label: 'next to ChatGPT' },
+        { key: 'input', type: 'toggle', label: 'chat bar' }
+      ] },
+      { type: 'head', label: 'messages' },
+      { key: 'msgs', type: 'list', meKey: 'from', adds: AI_MSG, item: AI_ITEM }
+    ],
+    render: function (s) {
+      var list = s.msgs || [];
+      var out = list.map(function (m, i) {
+        if (m.from === 'me') return '<div class="gpt-me"><div>' + br(m.text) + '</div></div>';
+        var last = !list.slice(i + 1).some(function (x) { return x.from === 'ai'; });
+        return '<div class="gpt-ai">' + md(m.text) +
+          (last ? '<div class="gpt-acts">' + I_COPY + I.thumb + flip(I.thumb) + I.share + I_RETRY + '</div>' : '') + '</div>';
+      }).join('');
+      return '<div class="shot gpt t-' + s.theme + '"><div class="gpt-head"><b>ChatGPT</b>' + (s.model ? '<span>' + esc(s.model) + '</span>' : '') + I.down + '</div>' +
+        '<div class="gpt-body">' + out + '</div>' +
+        (s.input ? '<div class="gpt-input"><span>Ask anything</span><div>' + ICON.plus + '<i></i>' + I.mic + '</div></div>' : '') + '</div>';
+    }
+  });
+
+  var SPARK = (function () {
+    var rays = '', n = 12;
+    for (var k = 0; k < n; k++) {
+      var a = k / n * Math.PI * 2 + 0.2, r = k % 2 ? 7.2 : 10.5, r0 = 1.6;
+      rays += '<path d="M' + (12 + Math.cos(a) * r0).toFixed(2) + ' ' + (12 + Math.sin(a) * r0).toFixed(2) +
+        'L' + (12 + Math.cos(a) * r).toFixed(2) + ' ' + (12 + Math.sin(a) * r).toFixed(2) + '"/>';
+    }
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2.3" stroke-linecap="round">' + rays + '</svg>';
+  })();
+
+  TOOLS.push({
+    id: 'claude',
+    label: 'claude',
+    defaults: { theme: 'light', title: '', me: '', model: '', font: 'serif', input: true, msgs: [] },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+        { key: 'font', type: 'select', label: 'reply font', options: [['serif', 'serif'], ['sans', 'sans']] },
+        { key: 'input', type: 'toggle', label: 'chat bar' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'title', type: 'text', label: 'chat title' },
+        { key: 'me', type: 'text', label: 'your initial' }
+      ] },
+      { key: 'model', type: 'text', label: 'model (chat bar)' },
+      { type: 'head', label: 'messages' },
+      { key: 'msgs', type: 'list', meKey: 'from', adds: AI_MSG, item: AI_ITEM }
+    ],
+    render: function (s) {
+      var list = s.msgs || [];
+      var out = list.map(function (m, i) {
+        if (m.from === 'me') {
+          return '<div class="cl-me"><span class="cl-init">' + esc((String(s.me).match(/./u) || [''])[0].toUpperCase()) + '</span><div>' + br(m.text) + '</div></div>';
+        }
+        var last = !list.slice(i + 1).some(function (x) { return x.from === 'ai'; });
+        return '<div class="cl-ai">' + md(m.text) +
+          (last ? '<div class="cl-foot">' + SPARK + '<span class="cl-acts">' + I_COPY + I.thumb + flip(I.thumb) + I_RETRY + '</span></div>' : '') + '</div>';
+      }).join('');
+      return '<div class="shot cl t-' + s.theme + ' f-' + s.font + '">' +
+        (s.title ? '<div class="cl-head">' + esc(s.title) + I.down + '</div>' : '') +
+        '<div class="cl-body">' + out + '</div>' +
+        (s.input ? '<div class="cl-input"><span>Reply to Claude…</span><div class="cl-row"><span class="cl-plus">' + ICON.plus + '</span>' +
+          '<span class="cl-grow"></span>' + (s.model ? '<span class="cl-model">' + esc(s.model) + I.down + '</span>' : '') +
+          '<span class="cl-send">' + stroke('M12 19V5M5.5 11.5 12 5l6.5 6.5', 2.2) + '</span></div></div>' : '') + '</div>';
+    }
+  });
+
+  /* ============================== google search ============================== */
+
+  var G_SPARK = '<svg viewBox="0 0 24 24"><defs><linearGradient id="gsp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4285f4"/><stop offset=".5" stop-color="#9b72cb"/><stop offset="1" stop-color="#d96570"/></linearGradient></defs>' +
+    '<path fill="url(#gsp)" d="M12 2c.6 5.2 4.8 9.4 10 10-5.2.6-9.4 4.8-10 10-.6-5.2-4.8-9.4-10-10 5.2-.6 9.4-4.8 10-10z"/></svg>';
+  var G_LOGO = '<span class="g-logo"><i style="color:#4285f4">G</i><i style="color:#ea4335">o</i><i style="color:#fbbc05">o</i><i style="color:#4285f4">g</i><i style="color:#34a853">l</i><i style="color:#ea4335">e</i></span>';
+
+  TOOLS.push({
+    id: 'google',
+    label: 'google',
+    defaults: { theme: 'light', query: '', ai: true, aiText: '', list: [] },
+    fields: [
+      { key: 'theme', type: 'select', label: 'mode', options: [['light', 'light'], ['dark', 'dark']] },
+      { key: 'query', type: 'text', label: 'search' },
+      { key: 'ai', type: 'toggle', label: 'ai overview' },
+      { key: 'aiText', type: 'textarea', label: 'ai overview text', rows: 4 },
+      { type: 'head', label: 'results' },
+      { key: 'list', type: 'list', adds: [{ label: '+ result', item: item({ icon: '', site: '', url: '', title: '', date: '', snippet: '' }) }], item: [
+        { key: 'icon', type: 'image', label: 'site icon', max: 100 },
+        { type: 'row', fields: [
+          { key: 'site', type: 'text', label: 'site name' },
+          { key: 'url', type: 'text', label: 'link' }
+        ] },
+        { key: 'title', type: 'text', label: 'title' },
+        { type: 'row', fields: [
+          { key: 'date', type: 'text', label: 'date' }
+        ] },
+        { key: 'snippet', type: 'textarea', label: 'snippet', rows: 2 }
+      ] }
+    ],
+    render: function (s) {
+      var tabs = ['All', 'Images', 'Videos', 'News', 'Shopping', 'Web'].map(function (t, i) {
+        return '<span' + (i ? '' : ' class="on"') + '>' + t + '</span>';
+      }).join('');
+      var results = (s.list || []).map(function (r) {
+        return '<div class="g-r"><div class="g-src">' + ava(r.icon, r.site, 'g-fav') +
+          '<div class="g-site"><span>' + esc(r.site) + '</span><small>' + esc(r.url) + '</small></div>' + I.dots + '</div>' +
+          '<div class="g-title">' + esc(r.title) + '</div>' +
+          '<div class="g-snip">' + (r.date ? '<span>' + esc(r.date) + ' — </span>' : '') + esc(r.snippet) + '</div></div>';
+      }).join('');
+      return '<div class="shot g t-' + s.theme + '"><div class="g-top">' + G_LOGO +
+        '<div class="g-bar"><span class="g-q">' + esc(s.query) + '</span><span class="g-icons">' + I.x + '<i></i>' + I.mic +
+        '<span class="g-search">' + stroke('M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20', 2.2) + '</span></span></div></div>' +
+        '<div class="g-tabs">' + tabs + '</div>' +
+        (s.ai ? '<div class="g-ai"><div class="g-aihead">' + G_SPARK + '<b>AI Overview</b></div><div class="g-aitext">' + md(s.aiText) + '</div></div>' : '') +
+        '<div class="g-results">' + results + '</div></div>';
+    }
+  });
+
+  /* tab order */
+  var ORDER = ['spotify', 'applemusic', 'tweet', 'imessage', 'igdm', 'igcomments', 'tiktok', 'youtube', 'reddit', 'facebook', 'pinterest', 'snapchat', 'discord', 'chatgpt', 'claude', 'google', 'tumblr', 'notes'];
+  TOOLS.sort(function (a, b) { return ORDER.indexOf(a.id) - ORDER.indexOf(b.id); });
+})();

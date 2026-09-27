@@ -18,8 +18,8 @@ var U = (function () {
   // picture if there is one, otherwise a colored circle with the first letter
   function avatar(src, name, cls, color) {
     if (src) return '<img class="' + cls + '" src="' + src + '" alt="">';
-    var letter = (String(name || '?').replace(/^[@#\s]+/, '').match(/./u) || ['?'])[0].toUpperCase();
-    return '<div class="' + cls + ' ph" style="background:' + (color || tint(name)) + '">' + esc(letter) + '</div>';
+    var letter = (String(name || '').replace(/^[@#\s]+/, '').match(/./u) || [''])[0].toUpperCase();
+    return '<div class="' + cls + ' ph" style="background:' + (letter ? color || tint(name) : '#b0b3b8') + '">' + esc(letter) + '</div>';
   }
 
   function isEmojiOnly(t) {
@@ -108,8 +108,8 @@ TOOLS.push({
   id: 'spotify',
   label: 'spotify lyrics',
   defaults: {
-    cover: '', palette: [], title: '...Baby One More Time', artist: 'Britney Spears',
-    lyrics: 'my loneliness is killing me\nand i, i must confess\ni still believe, still believe',
+    cover: '', palette: [], title: '', artist: '',
+    lyrics: '',
     bg: '#b8336a', fg: 'auto', size: 'm', frame: 'card'
   },
   fields: [
@@ -149,10 +149,10 @@ TOOLS.push({
   id: 'tweet',
   label: 'tweet',
   defaults: {
-    avatar: '', name: 'draculaura', handle: 'draculaura', badge: 'blue',
-    text: 'fangs for the memories 🦇💗', image: '',
-    time: '4:20 PM', date: 'Sep 27, 2026', views: '1.2M',
-    replies: '842', reposts: '12K', likes: '98K', bookmarks: '3.1K', liked: false, theme: 'light'
+    avatar: '', name: '', handle: '', badge: 'none',
+    text: '', image: '',
+    time: '', date: '', views: '',
+    replies: '', reposts: '', likes: '', bookmarks: '', liked: false, theme: 'light'
   },
   fields: [
     { key: 'avatar', type: 'image', label: 'pfp', max: 300 },
@@ -191,7 +191,7 @@ TOOLS.push({
     return '<div class="shot tw t-' + s.theme + '">' +
       '<div class="tw-head">' + U.avatar(s.avatar, s.name, 'tw-pfp') +
       '<div class="tw-who"><div class="tw-name"><span>' + U.esc(s.name) + '</span>' + badge + '</div>' +
-      '<div class="tw-handle">@' + U.esc(String(s.handle).replace(/^@/, '')) + '</div></div>' +
+      (s.handle ? '<div class="tw-handle">@' + U.esc(String(s.handle).replace(/^@/, '')) + '</div>' : '') + '</div>' +
       '<span class="tw-more">' + ICON.dots + '</span></div>' +
       (s.text ? '<div class="tw-text">' + tweetText(s.text) + '</div>' : '') +
       (s.image ? '<img class="tw-img" src="' + s.image + '" alt="">' : '') +
@@ -208,15 +208,9 @@ TOOLS.push({
   id: 'imessage',
   label: 'imessage',
   defaults: {
-    contact: 'clawdeen 🐺', photo: '', unread: '3', theme: 'light', bubble: 'blue',
-    clock: '9:41', battery: 82, showPct: false, receipt: 'Read 9:41 PM', typing: false,
-    msgs: [
-      { from: 'them', text: 'are u coming to the mall or not', stamp: 'Today 9:38 PM', image: '' },
-      { from: 'me', text: 'omw!!', stamp: '', image: '' },
-      { from: 'me', text: 'wait which store', stamp: '', image: '' },
-      { from: 'them', text: 'hot topic obviously', stamp: '', image: '' },
-      { from: 'me', text: '😭😭', stamp: '', image: '' }
-    ]
+    contact: '', photo: '', unread: '', theme: 'light', bubble: 'blue',
+    clock: '9:41', battery: 82, showPct: false, receipt: '', typing: false,
+    msgs: []
   },
   fields: [
     { type: 'head', label: 'phone' },
@@ -295,18 +289,9 @@ TOOLS.push({
   id: 'discord',
   label: 'discord',
   defaults: {
-    channel: 'general', input: true,
-    people: [
-      { id: 'dr', name: 'draculaura', color: '#ff77c8', avatar: '' },
-      { id: 'fr', name: 'frankie', color: '#4fe0a4', avatar: '' },
-      { id: 'cl', name: 'clawdeen', color: '#c78bff', avatar: '' }
-    ],
-    msgs: [
-      { from: 'dr', text: 'who ate my strawberry pocky', time: 'Today at 4:20 PM', reacts: '' },
-      { from: 'dr', text: 'i am being so serious rn', time: '', reacts: '' },
-      { from: 'fr', text: 'not me 👀', time: 'Today at 4:21 PM', reacts: '' },
-      { from: 'cl', text: '@frankie literally has crumbs on her', time: 'Today at 4:21 PM', reacts: '💀 4, 😭 2' }
-    ]
+    channel: '', input: true,
+    people: [],
+    msgs: []
   },
   fields: [
     { type: 'row', fields: [
@@ -315,7 +300,7 @@ TOOLS.push({
     ] },
     { type: 'head', label: 'people' },
     { key: 'people', type: 'list', compact: true,
-      adds: [{ label: '+ person', item: function () { return { id: uid(), name: 'new person', color: '#f2f3f5', avatar: '' }; } }],
+      adds: [{ label: '+ person', item: function () { return { id: uid(), name: '', color: '#f2f3f5', avatar: '' }; } }],
       item: [
         { type: 'row', fields: [
           { key: 'name', type: 'text', label: 'name' },
@@ -374,12 +359,8 @@ TOOLS.push({
   id: 'tumblr',
   label: 'tumblr',
   defaults: {
-    theme: 'light', tags: '#monster high #ghoul talk', notes: '48,213', liked: false,
-    chain: [
-      { blog: 'bloodsuckingbarbie', avatar: '', text: 'vampires should be allowed to go to prom', image: '' },
-      { blog: 'frankensteins-girl', avatar: '', text: 'who is stopping you', image: '' },
-      { blog: 'bloodsuckingbarbie', avatar: '', text: 'the sun', image: '' }
-    ]
+    theme: 'light', tags: '', notes: '', liked: false,
+    chain: [{ blog: '', avatar: '', text: '', image: '' }]
   },
   fields: [
     { type: 'row', fields: [
@@ -392,7 +373,7 @@ TOOLS.push({
     { key: 'chain', type: 'list',
       adds: [{ label: '+ reblog', item: function (s) {
         var c = s.chain || [], two = c[c.length - 2];
-        return { blog: two ? two.blog : 'blogname', avatar: two ? two.avatar : '', text: '', image: '' };
+        return { blog: two ? two.blog : '', avatar: two ? two.avatar : '', text: '', image: '' };
       } }],
       item: [
         { key: 'blog', type: 'text', label: 'blog' },
@@ -419,7 +400,7 @@ TOOLS.push({
       '<span class="tb-follow">Follow</span></div><span class="tb-more">' + ICON.dots + '</span></div>' +
       body +
       (tags ? '<div class="tb-tags">' + tags + '</div>' : '') +
-      '<div class="tb-foot"><span class="tb-notes">' + U.esc(s.notes) + ' notes</span><span class="tb-icons">' +
+      '<div class="tb-foot"><span class="tb-notes">' + (s.notes ? U.esc(s.notes) + ' ' : '') + 'notes</span><span class="tb-icons">' +
       ICON.tumblrShare + ICON.tumblrReply + ICON.tumblrReblog +
       '<span class="' + (s.liked ? 'tb-liked' : '') + '">' + (s.liked ? ICON.heartFull : ICON.heart) + '</span></span></div>' +
       '</div></div>';
@@ -433,9 +414,9 @@ TOOLS.push({
   label: 'notes app',
   defaults: {
     theme: 'light', clock: '9:41', battery: 64, showPct: false,
-    date: 'September 27, 2026 at 9:41 PM',
-    title: 'things i need',
-    body: '- new platform boots\n- the draculaura doll re-release\n- to stop buying lip gloss\n- more lip gloss'
+    date: '',
+    title: '',
+    body: ''
   },
   fields: [
     U.STATUS_FIELDS,
