@@ -16,10 +16,12 @@ var U = (function () {
   }
 
   // picture if there is one, otherwise a colored circle with the first letter
-  function avatar(src, name, cls, color) {
-    if (src) return '<img class="' + cls + '" src="' + src + '" alt="">';
-    var letter = (String(name || '').replace(/^[@#\s]+/, '').match(/./u) || [''])[0].toUpperCase();
-    return '<div class="' + cls + ' ph" style="background:' + (letter ? color || tint(name) : '#b0b3b8') + '">' + esc(letter) + '</div>';
+  // path (optional) makes the picture clickable in the preview to swap it
+  function avatar(src, name, cls, color, path) {
+    var di = path ? ' data-img="' + path + '"' : '';
+    if (src) return '<img class="' + cls + '" src="' + src + '" alt=""' + di + '>';
+    var letter = (String(name || '').replace(/\u200b/g, '').replace(/^[@#\s]+/, '').match(/./u) || [''])[0].toUpperCase();
+    return '<div class="' + cls + ' ph" style="background:' + (letter ? color || tint(name) : '#b0b3b8') + '"' + di + '>' + esc(letter) + '</div>';
   }
 
   function isEmojiOnly(t) {
@@ -60,7 +62,7 @@ var U = (function () {
   function statusBar(s) {
     var pct = parseInt(s.battery, 10);
     if (isNaN(pct)) pct = 80;
-    return '<div class="sbar"><span class="sb-time">' + esc(s.clock) + '</span><span class="sb-icons">' + SIGNAL + WIFI +
+    return '<div class="sbar"><span class="sb-time">' + E('clock', s.clock) + '</span><span class="sb-icons">' + SIGNAL + WIFI +
       (s.showPct ? '<span class="sb-pct">' + pct + '</span>' : '') + battery(pct, pct <= 20) + '</span></div>';
   }
   var STATUS_FIELDS = { type: 'row', fields: [
@@ -72,6 +74,19 @@ var U = (function () {
   return { esc: esc, br: br, avatar: avatar, tint: tint, isEmojiOnly: isEmojiOnly, lum: lum, shade: shade,
     statusBar: statusBar, STATUS_FIELDS: STATUS_FIELDS };
 })();
+
+/* click-to-type: every typed value in a preview is wrapped so it can be edited right on the picture.
+   path is the state key ('name') or a list path ('msgs.3.text'). */
+// while editing, blank fields hold GHOST so the spot still shows up on the picture (as a faint label) and can be clicked
+var GHOST = '\u200b';
+function bare(v) { return v === GHOST ? '' : v; }
+function E(path, v) { return '<span data-e="' + path + '">' + U.esc(bare(v)) + '</span>'; }
+function EB(path, v) { return '<span data-e="' + path + '" data-ml>' + U.br(bare(v)) + '</span>'; }
+function EW(path, html) {
+  var empty = !html.replace(/<[^>]*>/g, '').replace(/\u200b/g, '').trim();
+  return '<span data-e="' + path + '" data-ml>' + (empty ? '' : html) + '</span>';
+}
+function DI(path) { return ' data-img="' + path + '"'; }
 
 var ICON = {
   spotify: '<svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
@@ -126,11 +141,11 @@ TOOLS.push({
   ],
   render: function (s) {
     var fg = s.fg === 'auto' ? (U.lum(s.bg) > 0.5 ? '#000000' : '#ffffff') : s.fg;
-    var cover = s.cover ? '<img class="sp-cover" src="' + s.cover + '" alt="">' : '<div class="sp-cover sp-noart"></div>';
+    var cover = s.cover ? '<img class="sp-cover" src="' + s.cover + '"' + DI('cover') + ' alt="">' : '<div class="sp-cover sp-noart"></div>';
     var card = '<div class="sp-card sz-' + s.size + '" style="background:' + s.bg + ';color:' + fg + '">' +
-      '<div class="sp-top">' + cover + '<div class="sp-meta"><div class="sp-title">' + U.esc(s.title) + '</div>' +
-      '<div class="sp-artist">' + U.esc(s.artist) + '</div></div></div>' +
-      '<div class="sp-lyrics">' + U.br(s.lyrics) + '</div>' +
+      '<div class="sp-top">' + cover + '<div class="sp-meta"><div class="sp-title">' + E('title', s.title) + '</div>' +
+      '<div class="sp-artist">' + E('artist', s.artist) + '</div></div></div>' +
+      '<div class="sp-lyrics">' + EB('lyrics', s.lyrics) + '</div>' +
       '<div class="sp-logo">' + ICON.spotify + '<span>Spotify</span></div></div>';
     if (s.frame === 'story') {
       return '<div class="shot sp-story" style="background:linear-gradient(180deg,' + U.shade(s.bg, -0.35) + ',' + U.shade(s.bg, -0.7) + ')">' + card + '</div>';
@@ -158,7 +173,7 @@ TOOLS.push({
     { key: 'avatar', type: 'image', label: 'pfp', max: 300 },
     { type: 'row', fields: [
       { key: 'name', type: 'text', label: 'name' },
-      { key: 'handle', type: 'text', label: '@' }
+      { key: 'handle', type: 'text', label: 'username' }
     ] },
     { type: 'row', fields: [
       { key: 'badge', type: 'select', label: 'check', options: [['none', 'none'], ['blue', 'blue'], ['gold', 'gold'], ['gray', 'gray']] },
@@ -183,22 +198,22 @@ TOOLS.push({
   ],
   render: function (s) {
     var badge = s.badge !== 'none' ? '<span class="tw-badge b-' + s.badge + '">' + ICON.verified + '</span>' : '';
-    var meta = [U.esc(s.time), U.esc(s.date)].filter(Boolean).join(' · ');
-    if (s.views) meta += ' · <b>' + U.esc(s.views) + '</b> Views';
-    function act(icon, n, cls) {
-      return '<span class="tw-act ' + (cls || '') + '">' + icon + (n ? '<span>' + U.esc(n) + '</span>' : '') + '</span>';
+    var meta = [s.time ? E('time', s.time) : '', s.date ? E('date', s.date) : ''].filter(Boolean).join(' · ');
+    if (s.views) meta += ' · <b>' + E('views', s.views) + '</b> Views';
+    function act(icon, k, cls) {
+      return '<span class="tw-act ' + (cls || '') + '">' + icon + (k ? E(k, s[k]) : '') + '</span>';
     }
     return '<div class="shot tw t-' + s.theme + '">' +
-      '<div class="tw-head">' + U.avatar(s.avatar, s.name, 'tw-pfp') +
-      '<div class="tw-who"><div class="tw-name"><span>' + U.esc(s.name) + '</span>' + badge + '</div>' +
-      (s.handle ? '<div class="tw-handle">@' + U.esc(String(s.handle).replace(/^@/, '')) + '</div>' : '') + '</div>' +
+      '<div class="tw-head">' + U.avatar(s.avatar, s.name, 'tw-pfp', undefined, 'avatar') +
+      '<div class="tw-who"><div class="tw-name"><span>' + E('name', s.name) + '</span>' + badge + '</div>' +
+      (s.handle ? '<div class="tw-handle">@' + E('handle', String(s.handle).replace(/^@/, '')) + '</div>' : '') + '</div>' +
       '<span class="tw-more">' + ICON.dots + '</span></div>' +
-      (s.text ? '<div class="tw-text">' + tweetText(s.text) + '</div>' : '') +
-      (s.image ? '<img class="tw-img" src="' + s.image + '" alt="">' : '') +
+      (s.text ? '<div class="tw-text">' + EW('text', tweetText(s.text)) + '</div>' : '') +
+      (s.image ? '<img class="tw-img" src="' + s.image + '"' + DI('image') + ' alt="">' : '') +
       '<div class="tw-meta">' + meta + '</div>' +
-      '<div class="tw-acts">' + act(ICON.reply, s.replies) + act(ICON.repost, s.reposts) +
-      act(s.liked ? ICON.heartFull : ICON.heart, s.likes, s.liked ? 'liked' : '') +
-      act(ICON.bookmark, s.bookmarks) + act(ICON.share, '') + '</div></div>';
+      '<div class="tw-acts">' + act(ICON.reply, 'replies') + act(ICON.repost, 'reposts') +
+      act(s.liked ? ICON.heartFull : ICON.heart, 'likes', s.liked ? 'liked' : '') +
+      act(ICON.bookmark, 'bookmarks') + act(ICON.share, '') + '</div></div>';
   }
 });
 
@@ -247,7 +262,7 @@ TOOLS.push({
     list.forEach(function (m, i) { if (m.from === 'me') lastMe = i; });
     list.forEach(function (m, i) {
       if (m.stamp) {
-        var st = U.esc(m.stamp).replace(/^(\S+)(\s)/, '<b>$1</b>$2');
+        var st = EW('msgs.' + i + '.stamp', U.esc(m.stamp).replace(/^(\S+)(\s)/, '<b>$1</b>$2'));
         out += '<div class="im-stamp">' + st + '</div>';
       }
       var next = list[i + 1], prev = list[i - 1];
@@ -255,25 +270,25 @@ TOOLS.push({
       var gap = prev && prev.from !== m.from && !m.stamp ? ' gap' : '';
       var who = m.from === 'me' ? 'me' : 'them';
       if (m.image) {
-        out += '<div class="im-row ' + who + gap + '"><img class="im-pic" src="' + m.image + '" alt=""></div>';
+        out += '<div class="im-row ' + who + gap + '"><img class="im-pic" src="' + m.image + '"' + DI('msgs.' + i + '.image') + ' alt=""></div>';
         gap = '';
       }
       if (m.text) {
         var big = U.isEmojiOnly(m.text);
-        out += '<div class="im-row ' + who + gap + '"><div class="im-b ' + (big ? 'emoji' : 'bub') + (tail && !big ? ' tail' : '') + '">' + U.br(m.text) + '</div></div>';
+        out += '<div class="im-row ' + who + gap + '"><div class="im-b ' + (big ? 'emoji' : 'bub') + (tail && !big ? ' tail' : '') + '">' + EB('msgs.' + i + '.text', m.text) + '</div></div>';
       }
       if (i === lastMe && s.receipt && !(next && next.from === 'me')) {
-        out += '<div class="im-receipt">' + U.esc(s.receipt).replace(/^(Read|Delivered)/, '<b>$1</b>') + '</div>';
+        out += '<div class="im-receipt">' + E('receipt', s.receipt).replace(/^(Read|Delivered)/, '<b>$1</b>') + '</div>';
       }
     });
     if (s.typing) {
       out += '<div class="im-row them gap"><div class="im-b bub tail im-typing"><i></i><i></i><i></i></div></div>';
     }
-    var ph = s.photo ? '<img class="im-ava" src="' + s.photo + '" alt="">'
-      : '<div class="im-ava im-ava-ph">' + U.esc((String(s.contact).match(/\p{L}/u) || [''])[0].toUpperCase()) + '</div>';
+    var ph = s.photo ? '<img class="im-ava" src="' + s.photo + '"' + DI('photo') + ' alt="">'
+      : '<div class="im-ava im-ava-ph"' + DI('photo') + '>' + U.esc((String(s.contact).match(/\p{L}/u) || [''])[0].toUpperCase()) + '</div>';
     return '<div class="shot im t-' + s.theme + ' b-' + s.bubble + '">' + U.statusBar(s) +
-      '<div class="im-head"><div class="im-back">' + ICON.chevron + (s.unread ? '<span class="im-unread">' + U.esc(s.unread) + '</span>' : '') + '</div>' +
-      '<div class="im-contact">' + ph + '<div class="im-name">' + U.esc(s.contact) + ' <span>›</span></div></div>' +
+      '<div class="im-head"><div class="im-back">' + ICON.chevron + (s.unread ? '<span class="im-unread">' + E('unread', s.unread) + '</span>' : '') + '</div>' +
+      '<div class="im-contact">' + ph + '<div class="im-name">' + E('contact', s.contact) + ' <span>›</span></div></div>' +
       '<div class="im-video">' + ICON.video + '</div></div>' +
       '<div class="im-body">' + out + '</div>' +
       '<div class="im-input"><span class="im-plus">' + ICON.plus + '</span><div class="im-field">' +
@@ -327,29 +342,30 @@ TOOLS.push({
   ],
   render: function (s) {
     var people = {};
-    (s.people || []).forEach(function (p) { people[p.id] = p; });
+    (s.people || []).forEach(function (p, _i) { people[p.id] = p; });
     var out = '', prevFrom = null;
-    (s.msgs || []).forEach(function (m) {
+    (s.msgs || []).forEach(function (m, _i) {
       var p = people[m.from] || { name: 'deleted user', color: '#f2f3f5', avatar: '' };
-      var text = U.br(m.text).replace(/(^|\s|>)(@[\w.À-￿]+)/g, '$1<span class="dc-mention">$2</span>');
+      var text = EB('msgs.' + _i + '.text', m.text).replace(/(^|\s|>)(@[\w.À-￿]+)/g, '$1<span class="dc-mention">$2</span>');
       if (U.isEmojiOnly(m.text)) text = '<span class="dc-jumbo">' + text + '</span>';
       var reacts = String(m.reacts || '').split(',').map(function (r) { return r.trim(); }).filter(Boolean).map(function (r) {
         var mm = /^(.*?)\s*(\d+)?$/.exec(r);
         return '<span class="dc-react">' + U.esc(mm[1]) + '<b>' + (mm[2] || 1) + '</b></span>';
       }).join('');
+      var pi = (s.people || []).indexOf(p);
       var start = m.from !== prevFrom || m.time;
       out += '<div class="dc-msg' + (start ? ' start' : '') + '">' +
-        (start ? U.avatar(p.avatar, p.name, 'dc-pfp') +
-          '<div class="dc-top"><span class="dc-name" style="color:' + U.esc(p.color) + '">' + U.esc(p.name) + '</span>' +
-          (m.time ? '<span class="dc-time">' + U.esc(m.time) + '</span>' : '') + '</div>' : '') +
+        (start ? U.avatar(p.avatar, p.name, 'dc-pfp', undefined, pi >= 0 ? 'people.' + pi + '.avatar' : '') +
+          '<div class="dc-top"><span class="dc-name" style="color:' + U.esc(p.color) + '">' + (pi >= 0 ? E('people.' + pi + '.name', p.name) : U.esc(p.name)) + '</span>' +
+          (m.time ? '<span class="dc-time">' + E('msgs.' + _i + '.time', m.time) + '</span>' : '') + '</div>' : '') +
         (m.text ? '<div class="dc-text">' + text + '</div>' : '') +
-        (reacts ? '<div class="dc-reacts">' + reacts + '</div>' : '') + '</div>';
+        (reacts ? '<div class="dc-reacts">' + EW('msgs.' + _i + '.reacts', reacts) + '</div>' : '') + '</div>';
       prevFrom = m.from;
     });
     return '<div class="shot dc">' +
-      '<div class="dc-head">' + ICON.hash + '<span>' + U.esc(s.channel) + '</span></div>' +
+      '<div class="dc-head">' + ICON.hash + '<span>' + E('channel', s.channel) + '</span></div>' +
       '<div class="dc-body">' + out + '</div>' +
-      (s.input ? '<div class="dc-input">' + ICON.plusCircle + '<span>Message #' + U.esc(s.channel) + '</span></div>' : '') + '</div>';
+      (s.input ? '<div class="dc-input">' + ICON.plusCircle + '<span>Message #' + E('channel', s.channel) + '</span></div>' : '') + '</div>';
   }
 });
 
@@ -385,22 +401,24 @@ TOOLS.push({
   render: function (s) {
     var c = s.chain || [], last = c[c.length - 1] || { blog: '' };
     var multi = c.length > 1;
-    var body = c.map(function (p) {
+    var body = c.map(function (p, i) {
+      var pre = 'chain.' + i + '.';
       return '<div class="tb-part">' +
-        (multi ? '<div class="tb-who">' + U.avatar(p.avatar, p.blog, 'tb-ava sm') + '<b>' + U.esc(p.blog) + '</b></div>' : '') +
-        (p.image ? '<img class="tb-img" src="' + p.image + '" alt="">' : '') +
-        (p.text ? '<div class="tb-text">' + U.br(p.text) + '</div>' : '') + '</div>';
+        (multi ? '<div class="tb-who">' + U.avatar(p.avatar, p.blog, 'tb-ava sm', undefined, pre + 'avatar') + '<b>' + E(pre + 'blog', p.blog) + '</b></div>' : '') +
+        (p.image ? '<img class="tb-img" src="' + p.image + '"' + DI(pre + 'image') + ' alt="">' : '') +
+        '<div class="tb-text">' + EB(pre + 'text', p.text) + '</div></div>';
     }).join('');
     var tags = String(s.tags || '').split('#').map(function (t) { return t.trim(); }).filter(Boolean)
       .map(function (t) { return '<span>#' + U.esc(t) + '</span>'; }).join('');
+    tags = EW('tags', tags);
     return '<div class="shot tb t-' + s.theme + '"><div class="tb-post">' +
-      '<div class="tb-head">' + U.avatar(last.avatar, last.blog, 'tb-ava') +
-      '<div class="tb-names"><b>' + U.esc(last.blog) + '</b>' +
+      '<div class="tb-head">' + U.avatar(last.avatar, last.blog, 'tb-ava', undefined, c.length ? 'chain.' + (c.length - 1) + '.avatar' : '') +
+      '<div class="tb-names"><b>' + (c.length ? E('chain.' + (c.length - 1) + '.blog', last.blog) : '') + '</b>' +
       (multi ? '<span class="tb-rb">' + ICON.tumblrReblog + '</span><span class="tb-from">' + U.esc(c[c.length - 2].blog) + '</span>' : '') +
       '<span class="tb-follow">Follow</span></div><span class="tb-more">' + ICON.dots + '</span></div>' +
       body +
-      (tags ? '<div class="tb-tags">' + tags + '</div>' : '') +
-      '<div class="tb-foot"><span class="tb-notes">' + (s.notes ? U.esc(s.notes) + ' ' : '') + 'notes</span><span class="tb-icons">' +
+      '<div class="tb-tags">' + tags + '</div>' +
+      '<div class="tb-foot"><span class="tb-notes">' + (s.notes ? E('notes', s.notes) + ' ' : '') + 'notes</span><span class="tb-icons">' +
       ICON.tumblrShare + ICON.tumblrReply + ICON.tumblrReblog +
       '<span class="' + (s.liked ? 'tb-liked' : '') + '">' + (s.liked ? ICON.heartFull : ICON.heart) + '</span></span></div>' +
       '</div></div>';
@@ -429,9 +447,9 @@ TOOLS.push({
     return '<div class="shot nt t-' + s.theme + '">' + U.statusBar(s) +
       '<div class="nt-head"><span class="nt-back">' + ICON.chevron + '<span>Notes</span></span>' +
       '<span class="nt-tools">' + ICON.notesShare + ICON.notesMore + '</span></div>' +
-      '<div class="nt-page">' + (s.date ? '<div class="nt-date">' + U.esc(s.date) + '</div>' : '') +
-      (s.title ? '<div class="nt-title">' + U.br(s.title) + '</div>' : '') +
-      '<div class="nt-body">' + U.br(s.body) + '</div></div>' +
+      '<div class="nt-page">' + (s.date ? '<div class="nt-date">' + E('date', s.date) + '</div>' : '') +
+      (s.title ? '<div class="nt-title">' + EB('title', s.title) + '</div>' : '') +
+      '<div class="nt-body">' + EB('body', s.body) + '</div></div>' +
       '<div class="nt-bar">' + ICON.checklist + ICON.camera + ICON.pen + ICON.compose + '</div></div>';
   }
 });

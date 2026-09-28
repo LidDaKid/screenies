@@ -3,36 +3,180 @@
 (function () {
   var $ = function (sel) { return document.querySelector(sel); };
   var tabs = $('#tabs'), form = $('#form'), fit = $('#fit'), view = $('#view');
-  var tool, st, refreshers = [], saveTimer, scale = 1;
+  var tool, st, refreshers = [], saveTimer, scale = 1, inputs = {}, real = false;
+  var picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-  function load(t) {
-    var s = clone(t.defaults);
+  /* saving: IndexedDB (room for lots of photos), with localStorage as the old/backup spot */
+
+  var dbp = null;
+  function db() {
+    if (!dbp) {
+      dbp = new Promise(function (ok, bad) {
+        try {
+          var r = indexedDB.open('screenies', 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore('tools'); };
+          r.onsuccess = function () { ok(r.result); };
+          r.onerror = function () { bad(r.error); };
+        } catch (e) { bad(e); }
+      });
+    }
+    return dbp;
+  }
+  function dbDo(mode, fn) {
+    return db().then(function (d) {
+      return new Promise(function (ok, bad) {
+        var tx = d.transaction('tools', mode), req = fn(tx.objectStore('tools'));
+        tx.oncomplete = function () { ok(req && req.result); };
+        tx.onerror = function () { bad(tx.error); };
+      });
+    });
+  }
+
+  function lsGet(t) {
     try {
       var raw = localStorage.getItem('screenies:' + t.id);
-      if (raw) Object.assign(s, JSON.parse(raw));
-    } catch (e) { /* fresh start */ }
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function load(t) {
+    var s = clone(t.defaults), old = lsGet(t);
+    if (old) Object.assign(s, old);
     return s;
   }
 
   function save() {
     clearTimeout(saveTimer);
     var t = tool, s = st;
+    touched = true;
     saveTimer = setTimeout(function () {
-      try { localStorage.setItem('screenies:' + t.id, JSON.stringify(s)); } catch (e) { /* full or blocked */ }
+      dbDo('readwrite', function (os) { return os.put(JSON.parse(JSON.stringify(s)), t.id); }).then(function () {
+        try { localStorage.removeItem('screenies:' + t.id); } catch (e) { /* ignore */ }
+      }).catch(function () {
+        try { localStorage.setItem('screenies:' + t.id, JSON.stringify(s)); } catch (e) { /* full or blocked */ }
+      });
     }, 300);
   }
+  var touched = false;
 
   /* ---------- rendering ---------- */
 
+  // a light copy of the state where blank typed fields hold GHOST, so their spot is still on the picture to click
+  function ghosted() {
+    function texty(fields, out) {
+      fields.forEach(function (f) {
+        if (f.type === 'row') texty(f.fields, out);
+        else if (f.type === 'text' || f.type === 'textarea') out.push(f.key);
+      });
+      return out;
+    }
+    var g = Object.assign({}, st);
+    texty(tool.fields, []).forEach(function (k) { if (g[k] === '' || g[k] == null) g[k] = GHOST; });
+    tool.fields.forEach(function walk(f) {
+      if (f.type === 'row') return f.fields.forEach(walk);
+      if (f.type !== 'list' || !Array.isArray(g[f.key])) return;
+      var keys = texty(f.item, []);
+      g[f.key] = g[f.key].map(function (it) {
+        var c = Object.assign({}, it);
+        keys.forEach(function (k) { if (c[k] === '' || c[k] == null) c[k] = GHOST; });
+        return c;
+      });
+    });
+    return g;
+  }
+
   function render() {
-    fit.innerHTML = tool.render(st);
+    fit.innerHTML = tool.render(real ? st : ghosted());
     [].forEach.call(fit.querySelectorAll('img'), function (im) {
       if (!im.complete) im.addEventListener('load', refit);
     });
+    wireInline();
     if (tool.mount) tool.mount(fit.firstElementChild, st, { scale: function () { return scale; }, save: save });
     refit();
+  }
+
+  /* ---------- typing + picture swapping right on the preview ---------- */
+
+  function getPath(path) {
+    return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, st);
+  }
+  function setPath(path, v) {
+    var parts = path.split('.'), o = st;
+    for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+    o[parts[parts.length - 1]] = v;
+  }
+  // the form field behind a path ('name', 'msgs.3.text')
+  function fieldFor(path) {
+    var parts = path.split('.');
+    function find(fields, key) {
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (f.type === 'row') { var r = find(f.fields, key); if (r) return r; }
+        else if (f.key === key) return f;
+      }
+      return null;
+    }
+    var all = tool.fields.concat([U.STATUS_FIELDS]);
+    if (parts.length === 1) return find(all, parts[0]);
+    var list = find(all, parts[0]);
+    return list && list.item ? find(list.item, parts[2]) : null;
+  }
+
+  function wireInline() {
+    [].forEach.call(fit.querySelectorAll('[data-e]'), function (node) {
+      var path = node.dataset.e, f = fieldFor(path);
+      if (!f) return;
+      var multi = node.hasAttribute('data-ml') || f.type === 'textarea';
+      node.contentEditable = 'plaintext-only';
+      if (node.contentEditable !== 'plaintext-only') node.contentEditable = 'true';
+      node.spellcheck = false;
+      node.dataset.ph = f.label;
+      node.addEventListener('focus', function () {
+        // formatted text (bullets, bold, hashtags) goes back to plain while you edit it
+        if (node.hasAttribute('data-ml') && node.innerHTML !== U.br(getPath(path))) node.innerText = getPath(path) || '';
+      });
+      node.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !multi) { e.preventDefault(); node.blur(); }
+        if (e.key === 'Escape') node.blur();
+      });
+      node.addEventListener('input', function () {
+        var v = node.innerText.replace(/\n$/, '');
+        if (!multi) v = v.replace(/\n/g, ' ');
+        if (f.type === 'number') v = parseFloat(v) || 0;
+        setPath(path, v);
+        if (inputs[path] && inputs[path] !== document.activeElement) inputs[path].value = v;
+        // copies of the same text (like the whisper outline) follow along
+        [].forEach.call(fit.querySelectorAll('[data-e="' + path + '"]'), function (o) { if (o !== node) o.textContent = v; });
+        save();
+      });
+      node.addEventListener('blur', function (e) {
+        var next = e.relatedTarget;
+        if (next && fit.contains(next) && next.hasAttribute('data-e')) return;
+        setTimeout(function () { if (!fit.contains(document.activeElement) || !document.activeElement.hasAttribute('data-e')) changed(); }, 0);
+      });
+    });
+    [].forEach.call(fit.querySelectorAll('[data-img]'), function (node) {
+      node.addEventListener('click', function (e) {
+        e.preventDefault();
+        var path = node.dataset.img, f = fieldFor(path) || {};
+        picker.onchange = function () {
+          var fl = picker.files[0];
+          picker.value = '';
+          if (!fl) return;
+          readImage(fl, f.max || 1200).then(function (url) {
+            setPath(path, url);
+            if (!f.palette) return url;
+            return palette(url).then(function (p) { st.palette = p; if (p.length) st.bg = p[0]; });
+          }).then(function () { buildForm(); changed(); })
+            .catch(function () { alert("that file didn't open as a picture"); });
+        };
+        picker.click();
+      });
+    });
   }
 
   function refit() {
@@ -147,15 +291,16 @@
     sel.value = obj[f.key];
   }
 
-  function field(f, obj, onChange) {
+  function field(f, obj, onChange, prefix) {
     onChange = onChange || changed;
+    prefix = prefix || '';
     var input, wrap;
 
     if (f.type === 'head') return el('h3', '', U.esc(f.label));
 
     if (f.type === 'row') {
       var row = el('div', 'row');
-      f.fields.forEach(function (sub) { row.appendChild(field(sub, obj, onChange)); });
+      f.fields.forEach(function (sub) { row.appendChild(field(sub, obj, onChange, prefix)); });
       return row;
     }
 
@@ -165,6 +310,7 @@
       input.value = obj[f.key] == null ? '' : obj[f.key];
       if (f.placeholder) input.placeholder = f.placeholder;
       input.addEventListener('input', function () { obj[f.key] = input.value; onChange(); });
+      inputs[prefix + f.key] = input;
       return labeled(f, input);
     }
 
@@ -173,6 +319,7 @@
       input.rows = f.rows || 3;
       input.value = obj[f.key] || '';
       input.addEventListener('input', function () { obj[f.key] = input.value; onChange(); });
+      inputs[prefix + f.key] = input;
       return labeled(f, input);
     }
 
@@ -332,7 +479,7 @@
         bar.appendChild(del);
         card.appendChild(bar);
         f.item.forEach(function (sub) {
-          card.appendChild(field(sub, item, function () { mark(); changed(); }));
+          card.appendChild(field(sub, item, function () { mark(); changed(); }, f.key + '.' + i + '.'));
         });
         box.appendChild(card);
       });
@@ -359,16 +506,32 @@
 
   /* ---------- tools ---------- */
 
+  function buildForm() {
+    var ed = $('#editor'), top = ed.scrollTop;
+    refreshers = [];
+    inputs = {};
+    form.innerHTML = '';
+    tool.fields.forEach(function (f) { form.appendChild(field(f, st)); });
+    ed.scrollTop = top;
+  }
+
   function open(id) {
     var t = TOOLS.filter(function (x) { return x.id === id; })[0] || TOOLS[0];
     tool = t;
     st = load(t);
-    refreshers = [];
-    form.innerHTML = '';
-    t.fields.forEach(function (f) { form.appendChild(field(f, st)); });
+    touched = false;
+    buildForm();
     [].forEach.call(tabs.children, function (a) { a.classList.toggle('on', a.dataset.id === t.id); });
     document.title = 'screenies · ' + t.label;
     render();
+    if (lsGet(t)) return Promise.resolve();
+    // the saved version lives in IndexedDB; swap it in when it arrives (unless you already started typing)
+    return dbDo('readonly', function (os) { return os.get(t.id); }).then(function (saved) {
+      if (!saved || tool !== t || touched) return;
+      st = Object.assign(clone(t.defaults), saved);
+      buildForm();
+      render();
+    }).catch(function () { /* no saved copy */ });
   }
 
   TOOLS.forEach(function (t) {
@@ -383,8 +546,9 @@
 
   $('#reset').addEventListener('click', function () {
     if (!confirm('reset this one?')) return;
-    try { localStorage.removeItem('screenies:' + tool.id); } catch (e) { /* ignore */ }
-    open(tool.id);
+    var id = tool.id;
+    try { localStorage.removeItem('screenies:' + id); } catch (e) { /* ignore */ }
+    dbDo('readwrite', function (os) { return os.delete(id); }).catch(function () {}).then(function () { open(id); });
   });
 
   /* ---------- export ---------- */
@@ -392,12 +556,17 @@
   function shoot() {
     var shot = fit.firstElementChild;
     var keep = fit.style.transform;
+    if (fit.contains(document.activeElement)) document.activeElement.blur();
+    real = true;
+    render();
+    shot = fit.firstElementChild;
+    fit.classList.add('exporting');
     fit.style.transform = '';
     var p = (document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
       return modernScreenshot.domToBlob(shot, { scale: 3, type: 'image/png' });
     });
-    return p.then(function (b) { fit.style.transform = keep; return b; },
-      function (e) { fit.style.transform = keep; throw e; });
+    function done() { real = false; fit.classList.remove('exporting'); render(); }
+    return p.then(function (b) { done(); return b; }, function (e) { done(); throw e; });
   }
 
   function flash(btn, text) {
@@ -431,7 +600,8 @@
       .catch(function (e) { console.error(e); flash(btn, 'oops'); });
   });
 
-  window.__sc = { open: open, shoot: shoot, state: function () { return st; } };
+  window.__sc = { open: open, shoot: shoot, state: function () { return st; }, tool: function () { return tool; }, render: render, inputs: function () { return inputs; },
+    wipe: function () { return dbDo('readwrite', function (os) { return os.clear(); }); } };
 
   open(location.hash.slice(1) || TOOLS[0].id);
 })();

@@ -81,21 +81,21 @@
       ] }
     ],
     render: function (s) {
-      var out = (s.list || []).map(function (c) {
-        return '<div class="igc-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'igc-ava') +
-          '<div class="igc-main"><div class="igc-top"><b>' + esc(c.user) + '</b>' + (c.badge ? BADGE : '') +
-          '<span>' + esc(c.time) + '</span></div>' +
-          '<div class="igc-text">' + tags(c.text, 'igc-at') + '</div>' +
+      var out = (s.list || []).map(function (c, _i) {
+        return '<div class="igc-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'igc-ava', undefined, 'list.' + _i + '.avatar') +
+          '<div class="igc-main"><div class="igc-top"><b>' + E('list.' + _i + '.user', c.user) + '</b>' + (c.badge ? BADGE : '') +
+          '<span>' + E('list.' + _i + '.time', c.time) + '</span></div>' +
+          '<div class="igc-text">' + EW('list.' + _i + '.text', tags(c.text, 'igc-at')) + '</div>' +
           '<div class="igc-sub">Reply</div>' +
-          (c.more ? '<div class="igc-more"><i></i>View ' + esc(c.more) + ' more ' + (c.more === '1' ? 'reply' : 'replies') + '</div>' : '') +
+          (c.more ? '<div class="igc-more"><i></i>View ' + E('list.' + _i + '.more', c.more) + ' more ' + (c.more === '1' ? 'reply' : 'replies') + '</div>' : '') +
           '</div><div class="igc-like' + (c.liked ? ' on' : '') + '">' + (c.liked ? I.heartFull : I.heart) +
-          (c.likes ? '<span>' + esc(c.likes) + '</span>' : '') + '</div></div>';
+          (c.likes ? '<span>' + E('list.' + _i + '.likes', c.likes) + '</span>' : '') + '</div></div>';
       }).join('');
       return '<div class="shot igc t-' + s.theme + '">' +
         (s.head ? '<div class="igc-head"><i></i><b>Comments</b></div>' : '') +
         '<div class="igc-list">' + out + '</div>' +
         (s.input ? '<div class="igc-input"><div class="igc-emo">❤️🙌🔥👏😢😍😮😂</div>' +
-          '<div class="igc-bar">' + ava(s.me, '', 'igc-ava me') + '<span>Add a comment…</span>' + I.send + '</div></div>' : '') +
+          '<div class="igc-bar">' + ava(s.me, '', 'igc-ava me', undefined, 'me') + '<span>Add a comment…</span>' + I.send + '</div></div>' : '') +
         '</div>';
     }
   });
@@ -148,18 +148,18 @@
         var joinUp = prev && prev.from === m.from && !m.stamp;
         var joinDown = next && next.from === m.from && !next.stamp;
         var who = m.from === 'me' ? 'me' : 'them';
-        if (m.stamp) out += '<div class="igd-stamp">' + esc(m.stamp) + '</div>';
+        if (m.stamp) out += '<div class="igd-stamp">' + E('msgs.' + i + '.stamp', m.stamp) + '</div>';
         var big = U.isEmojiOnly(m.text) && !m.image;
-        var body = (m.image ? '<img class="igd-pic" src="' + m.image + '" alt="">' : '') +
-          (m.text ? '<div class="igd-b' + (big ? ' emoji' : '') + (joinUp ? ' up' : '') + (joinDown ? ' down' : '') + '">' + br(m.text) + '</div>' : '');
+        var body = (m.image ? '<img class="igd-pic" src="' + m.image + '"' + DI('msgs.' + i + '.image') + ' alt="">' : '') +
+          (m.text ? '<div class="igd-b' + (big ? ' emoji' : '') + (joinUp ? ' up' : '') + (joinDown ? ' down' : '') + '">' + EB('msgs.' + i + '.text', m.text) + '</div>' : '');
         out += '<div class="igd-row ' + who + (joinUp ? '' : ' gap') + (m.react ? ' reacted' : '') + '">' +
-          (who === 'them' ? (joinDown ? '<div class="igd-ava sp"></div>' : ava(s.photo, s.name, 'igd-ava')) : '') +
-          '<div class="igd-col">' + body + (m.react ? '<span class="igd-react">' + esc(m.react) + '</span>' : '') + '</div></div>';
-        if (i === lastMe && s.seen && !(next && next.from === 'me')) out += '<div class="igd-seen">' + esc(s.seen) + '</div>';
+          (who === 'them' ? (joinDown ? '<div class="igd-ava sp"></div>' : ava(s.photo, s.name, 'igd-ava', undefined, 'photo')) : '') +
+          '<div class="igd-col">' + body + (m.react ? '<span class="igd-react">' + E('msgs.' + i + '.react', m.react) + '</span>' : '') + '</div></div>';
+        if (i === lastMe && s.seen && !(next && next.from === 'me')) out += '<div class="igd-seen">' + E('seen', s.seen) + '</div>';
       });
       return '<div class="shot igd t-' + s.theme + ' b-' + s.bubble + '">' + U.statusBar(s) +
-        '<div class="igd-head"><span class="igd-ic">' + I.back + '</span>' + ava(s.photo, s.name, 'igd-hava') +
-        '<div class="igd-who"><b>' + esc(s.name) + '</b><span>' + esc(s.sub) + '</span></div>' +
+        '<div class="igd-head"><span class="igd-ic">' + I.back + '</span>' + ava(s.photo, s.name, 'igd-hava', undefined, 'photo') +
+        '<div class="igd-who"><b>' + E('name', s.name) + '</b><span>' + E('sub', s.sub) + '</span></div>' +
         '<span class="igd-ic">' + I.phone + '</span><span class="igd-ic">' + I.video + '</span></div>' +
         '<div class="igd-body">' + out + '</div>' +
         '<div class="igd-input"><span class="igd-cam">' + I.camera + '</span><span class="igd-ph">Message…</span>' +
@@ -203,22 +203,22 @@
       ] }
     ],
     render: function (s) {
-      var out = (s.list || []).map(function (c) {
-        return '<div class="tt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'tt-ava') +
-          '<div class="tt-main"><div class="tt-user">' + esc(c.user) + (c.creator ? '<span class="tt-creator">Creator</span>' : '') + '</div>' +
-          '<div class="tt-text">' + tags(c.text, 'tt-at') + '</div>' +
-          '<div class="tt-sub"><span>' + esc(c.time) + '</span><b>Reply</b></div>' +
-          (c.more ? '<div class="tt-more"><i></i>View ' + esc(c.more) + ' ' + (c.more === '1' ? 'reply' : 'replies') + I.down + '</div>' : '') +
+      var out = (s.list || []).map(function (c, _i) {
+        return '<div class="tt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.avatar, c.user, 'tt-ava', undefined, 'list.' + _i + '.avatar') +
+          '<div class="tt-main"><div class="tt-user">' + E('list.' + _i + '.user', c.user) + (c.creator ? '<span class="tt-creator">Creator</span>' : '') + '</div>' +
+          '<div class="tt-text">' + EW('list.' + _i + '.text', tags(c.text, 'tt-at')) + '</div>' +
+          '<div class="tt-sub"><span>' + E('list.' + _i + '.time', c.time) + '</span><b>Reply</b></div>' +
+          (c.more ? '<div class="tt-more"><i></i>View ' + E('list.' + _i + '.more', c.more) + ' ' + (c.more === '1' ? 'reply' : 'replies') + I.down + '</div>' : '') +
           '</div><div class="tt-like' + (c.liked ? ' on' : '') + '">' + (c.liked ? I.heartFull : I.heart) +
-          '<span>' + esc(c.likes) + '</span></div></div>';
+          '<span>' + E('list.' + _i + '.likes', c.likes) + '</span></div></div>';
       }).join('');
-      var sheet = '<div class="tt t-' + s.theme + '"><div class="tt-head"><span></span><b>' + esc(s.count) + ' comments</b>' + I.x + '</div>' +
+      var sheet = '<div class="tt t-' + s.theme + '"><div class="tt-head"><span></span><b>' + E('count', s.count) + ' comments</b>' + I.x + '</div>' +
         '<div class="tt-list">' + out + '</div>' +
         '<div class="tt-input"><span>Add comment…</span>' + I.at + I.smile + '</div></div>';
       if (!s.video) return '<div class="shot tt-solo">' + sheet + '</div>';
       var pct = Math.max(0, Math.min(100, +s.progress || 0));
       return '<div class="shot tt-phone">' + U.statusBar(s) +
-        '<div class="tt-vid"><img src="' + s.video + '" alt=""><div class="tt-prog"><i style="width:' + pct + '%"></i><b style="left:' + pct + '%"></b></div></div>' +
+        '<div class="tt-vid"><img src="' + s.video + '"' + DI('video') + ' alt=""><div class="tt-prog"><i style="width:' + pct + '%"></i><b style="left:' + pct + '%"></b></div></div>' +
         sheet + '</div>';
     }
   });
@@ -276,29 +276,29 @@
       ] }
     ],
     render: function (s) {
-      var out = (s.list || []).map(function (c) {
-        var handle = c.creator ? '<span class="yt-owner">' + esc(c.handle) + '</span>' : '<b>' + esc(c.handle) + '</b>';
-        return '<div class="yt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.creator ? (c.avatar || s.channelAvatar) : c.avatar, c.handle, 'yt-ava') +
+      var out = (s.list || []).map(function (c, _i) {
+        var handle = c.creator ? '<span class="yt-owner">' + E('list.' + _i + '.handle', c.handle) + '</span>' : '<b>' + E('list.' + _i + '.handle', c.handle) + '</b>';
+        return '<div class="yt-c' + (c.reply ? ' reply' : '') + '">' + ava(c.creator ? (c.avatar || s.channelAvatar) : c.avatar, c.handle, 'yt-ava', undefined, 'list.' + _i + '.avatar') +
           '<div class="yt-main">' +
-          (c.pinned ? '<div class="yt-pin">' + I.pin + 'Pinned by ' + esc(s.channel) + '</div>' : '') +
-          '<div class="yt-top">' + handle + '<span>' + esc(c.time) + '</span></div>' +
-          '<div class="yt-text">' + tags(c.text, 'yt-at') + '</div>' +
-          '<div class="yt-acts"><span class="yt-ic">' + I.thumb + '</span><span class="yt-n">' + esc(c.likes) + '</span>' +
+          (c.pinned ? '<div class="yt-pin">' + I.pin + 'Pinned by ' + E('channel', s.channel) + '</div>' : '') +
+          '<div class="yt-top">' + handle + '<span>' + E('list.' + _i + '.time', c.time) + '</span></div>' +
+          '<div class="yt-text">' + EW('list.' + _i + '.text', tags(c.text, 'yt-at')) + '</div>' +
+          '<div class="yt-acts"><span class="yt-ic">' + I.thumb + '</span><span class="yt-n">' + E('list.' + _i + '.likes', c.likes) + '</span>' +
           '<span class="yt-ic">' + flip(I.thumb) + '</span>' +
-          (c.hearted ? '<span class="yt-heart">' + ava(s.channelAvatar, s.channel, 'yt-hava') + '<i>' + I.heartFull + '</i></span>' : '') +
+          (c.hearted ? '<span class="yt-heart">' + ava(s.channelAvatar, s.channel, 'yt-hava', undefined, 'channelAvatar') + '<i>' + I.heartFull + '</i></span>' : '') +
           '<b class="yt-reply">Reply</b></div>' +
-          (c.replies ? '<div class="yt-replies">' + I.down + esc(c.replies) + ' ' + (c.replies === '1' ? 'reply' : 'replies') + '</div>' : '') +
+          (c.replies ? '<div class="yt-replies">' + I.down + E('list.' + _i + '.replies', c.replies) + ' ' + (c.replies === '1' ? 'reply' : 'replies') + '</div>' : '') +
           '</div><span class="yt-dots">' + I.dots + '</span></div>';
       }).join('');
       var name = s.channelName || String(s.channel || '').replace(/^@/, '');
-      var meta = [s.views ? esc(s.views) + ' views' : '', esc(s.ago)].filter(Boolean).join(' • ');
-      var video = '<div class="yt-video"><div class="yt-thumb">' + (s.thumb ? '<img src="' + s.thumb + '" alt="">' : '') +
-        (s.duration ? '<span class="yt-dur">' + esc(s.duration) + '</span>' : '') +
+      var meta = [s.views ? E('views', s.views) + ' views' : '', s.ago ? E('ago', s.ago) : ''].filter(Boolean).join(' • ');
+      var video = '<div class="yt-video"><div class="yt-thumb">' + (s.thumb ? '<img src="' + s.thumb + '"' + DI('thumb') + ' alt="">' : '') +
+        (s.duration ? '<span class="yt-dur">' + E('duration', s.duration) + '</span>' : '') +
         (+s.watched > 0 ? '<div class="yt-watched"><i style="width:' + Math.min(100, +s.watched) + '%"></i></div>' : '') + '</div>' +
-        '<div class="yt-vinfo">' + ava(s.channelAvatar, s.channel || name, 'yt-vava') + '<div class="yt-vtext"><div class="yt-vtitle">' + br(s.title) + '</div>' +
-        '<div class="yt-vsub">' + esc(name) + (s.verified ? '<span class="yt-check">' + ICON.verified + '</span>' : '') + '</div>' +
+        '<div class="yt-vinfo">' + ava(s.channelAvatar, s.channel || name, 'yt-vava', undefined, 'channelAvatar') + '<div class="yt-vtext"><div class="yt-vtitle">' + EB('title', s.title) + '</div>' +
+        '<div class="yt-vsub">' + E(s.channelName ? 'channelName' : 'channel', name) + (s.verified ? '<span class="yt-check">' + ICON.verified + '</span>' : '') + '</div>' +
         (meta ? '<div class="yt-vsub">' + meta + '</div>' : '') + '</div><span class="yt-dots">' + I.dots + '</span></div></div>';
-      var comments = '<div class="yt-head"><b>' + esc(s.count) + ' Comments</b><span class="yt-sort">' + I.sort + 'Sort by</span></div>' + out;
+      var comments = '<div class="yt-head"><b>' + E('count', s.count) + ' Comments</b><span class="yt-sort">' + I.sort + 'Sort by</span></div>' + out;
       var show = s.show || 'both';
       return '<div class="shot yt t-' + s.theme + '">' + (show !== 'comments' ? video : '') + (show !== 'video' ? comments : '') + '</div>';
     }
@@ -355,27 +355,27 @@
     ],
     render: function (s) {
       var voted = s.voted === 'up' ? ' up' : s.voted === 'down' ? ' down' : '';
-      var comments = (s.list || []).map(function (c) {
+      var comments = (s.list || []).map(function (c, _i) {
         var d = parseInt(c.depth, 10) || 0, lines = '';
         for (var k = 0; k < d; k++) lines += '<i style="left:' + (12 + k * 28) + 'px"></i>';
         return '<div class="rd-c" style="padding-left:' + (d * 28) + 'px">' + lines +
-          '<div class="rd-ctop">' + ava(c.avatar, c.user, 'rd-cava') + '<b>' + esc(c.user) + '</b>' +
-          (c.op ? '<span class="rd-op">OP</span>' : '') + (c.time ? '<span>· ' + esc(c.time) + '</span>' : '') + '</div>' +
-          '<div class="rd-ctext">' + br(c.text) + '</div>' +
-          '<div class="rd-cacts"><span class="rd-ic">' + I.up + '</span><b>' + esc(c.votes) + '</b><span class="rd-ic">' + flip(I.up) + '</span>' +
+          '<div class="rd-ctop">' + ava(c.avatar, c.user, 'rd-cava', undefined, 'list.' + _i + '.avatar') + '<b>' + E('list.' + _i + '.user', c.user) + '</b>' +
+          (c.op ? '<span class="rd-op">OP</span>' : '') + (c.time ? '<span>· ' + E('list.' + _i + '.time', c.time) + '</span>' : '') + '</div>' +
+          '<div class="rd-ctext">' + EB('list.' + _i + '.text', c.text) + '</div>' +
+          '<div class="rd-cacts"><span class="rd-ic">' + I.up + '</span><b>' + E('list.' + _i + '.votes', c.votes) + '</b><span class="rd-ic">' + flip(I.up) + '</span>' +
           '<span class="rd-ic">' + I.bubble + '</span><b>Reply</b><span class="rd-ic">' + I.dots + '</span></div></div>';
       }).join('');
       return '<div class="shot rd t-' + s.theme + '">' +
-        '<div class="rd-head">' + ava(s.subIcon, s.sub, 'rd-sava', '#ff4500') +
-        '<div class="rd-who"><div><b>r/' + esc(s.sub) + '</b>' + (s.time ? ' <span>· ' + esc(s.time) + '</span>' : '') + '</div>' + (s.user ? '<span>u/' + esc(s.user) + '</span>' : '') + '</div>' +
+        '<div class="rd-head">' + ava(s.subIcon, s.sub, 'rd-sava', '#ff4500', 'subIcon') +
+        '<div class="rd-who"><div><b>r/' + E('sub', s.sub) + '</b>' + (s.time ? ' <span>· ' + E('time', s.time) + '</span>' : '') + '</div>' + (s.user ? '<span>u/' + E('user', s.user) + '</span>' : '') + '</div>' +
         '<span class="rd-join">Join</span><span class="rd-ic">' + I.dots + '</span></div>' +
-        '<div class="rd-title">' + br(s.title) + '</div>' +
-        (s.flair ? '<span class="rd-flair">' + esc(s.flair) + '</span>' : '') +
-        (s.body ? '<div class="rd-body">' + br(s.body) + '</div>' : '') +
-        (s.image ? '<img class="rd-img" src="' + s.image + '" alt="">' : '') +
-        '<div class="rd-acts"><span class="rd-pill vote' + voted + '"><span class="rd-ic">' + (s.voted === 'up' ? I.upFull : I.up) + '</span><b>' + esc(s.votes) + '</b>' +
+        '<div class="rd-title">' + EB('title', s.title) + '</div>' +
+        (s.flair ? '<span class="rd-flair">' + E('flair', s.flair) + '</span>' : '') +
+        (s.body ? '<div class="rd-body">' + EB('body', s.body) + '</div>' : '') +
+        (s.image ? '<img class="rd-img" src="' + s.image + '"' + DI('image') + ' alt="">' : '') +
+        '<div class="rd-acts"><span class="rd-pill vote' + voted + '"><span class="rd-ic">' + (s.voted === 'up' ? I.upFull : I.up) + '</span><b>' + E('votes', s.votes) + '</b>' +
         '<span class="rd-ic">' + flip(s.voted === 'down' ? I.upFull : I.up) + '</span></span>' +
-        '<span class="rd-pill"><span class="rd-ic">' + I.bubble + '</span><b>' + esc(s.comments) + '</b></span>' +
+        '<span class="rd-pill"><span class="rd-ic">' + I.bubble + '</span><b>' + E('comments', s.comments) + '</b></span>' +
         '<span class="rd-pill"><span class="rd-ic">' + I.share + '</span><b>Share</b></span></div>' +
         (comments ? '<div class="rd-comments">' + comments + '</div>' : '') + '</div>';
     }
@@ -427,21 +427,21 @@
     render: function (s) {
       var emo = (String(s.reactions || '').match(/\p{Extended_Pictographic}️?/gu) || []).slice(0, 3);
       var bigText = s.text && !s.image && s.text.length <= 85 && s.text.indexOf('\n') < 0;
-      var comments = (s.list || []).map(function (c) {
-        return '<div class="fb-c">' + ava(c.avatar, c.name, 'fb-cava') + '<div class="fb-cmain">' +
-          '<div class="fb-bub"><b>' + esc(c.name) + '</b><div>' + br(c.text) + '</div>' +
-          (c.likes ? '<span class="fb-clikes"><i>👍</i>' + esc(c.likes) + '</span>' : '') + '</div>' +
-          '<div class="fb-csub"><span>' + esc(c.time) + '</span><b>Like</b><b>Reply</b></div></div></div>';
+      var comments = (s.list || []).map(function (c, _i) {
+        return '<div class="fb-c">' + ava(c.avatar, c.name, 'fb-cava', undefined, 'list.' + _i + '.avatar') + '<div class="fb-cmain">' +
+          '<div class="fb-bub"><b>' + E('list.' + _i + '.name', c.name) + '</b><div>' + EB('list.' + _i + '.text', c.text) + '</div>' +
+          (c.likes ? '<span class="fb-clikes"><i>👍</i>' + E('list.' + _i + '.likes', c.likes) + '</span>' : '') + '</div>' +
+          '<div class="fb-csub"><span>' + E('list.' + _i + '.time', c.time) + '</span><b>Like</b><b>Reply</b></div></div></div>';
       }).join('');
-      var counts = [s.comments ? '<span>' + esc(s.comments) + ' comments</span>' : '', s.shares ? '<span>' + esc(s.shares) + ' shares</span>' : ''].join('');
+      var counts = [s.comments ? '<span>' + E('comments', s.comments) + ' comments</span>' : '', s.shares ? '<span>' + E('shares', s.shares) + ' shares</span>' : ''].join('');
       return '<div class="shot fb t-' + s.theme + '">' +
-        '<div class="fb-head">' + ava(s.avatar, s.name, 'fb-ava') + '<div class="fb-who"><div class="fb-name"><b>' + esc(s.name) + '</b>' + (s.badge ? BADGE : '') + '</div>' +
-        '<div class="fb-time">' + (s.time ? esc(s.time) + ' · ' : '') + '<span class="fb-aud">' + (s.audience === 'friends' ? I.friends : I.globe) + '</span></div></div>' +
+        '<div class="fb-head">' + ava(s.avatar, s.name, 'fb-ava', undefined, 'avatar') + '<div class="fb-who"><div class="fb-name"><b>' + E('name', s.name) + '</b>' + (s.badge ? BADGE : '') + '</div>' +
+        '<div class="fb-time">' + (s.time ? E('time', s.time) + ' · ' : '') + '<span class="fb-aud">' + (s.audience === 'friends' ? I.friends : I.globe) + '</span></div></div>' +
         '<span class="fb-ic">' + I.dots + '</span><span class="fb-ic">' + I.x + '</span></div>' +
-        (s.text ? '<div class="fb-text' + (bigText ? ' big' : '') + '">' + br(s.text) + '</div>' : '') +
-        (s.image ? '<img class="fb-img" src="' + s.image + '" alt="">' : '') +
+        (s.text ? '<div class="fb-text' + (bigText ? ' big' : '') + '">' + EB('text', s.text) + '</div>' : '') +
+        (s.image ? '<img class="fb-img" src="' + s.image + '"' + DI('image') + ' alt="">' : '') +
         ((emo.length || counts) ? '<div class="fb-stats"><span class="fb-reacts">' + emo.map(function (e) { return '<i>' + e + '</i>'; }).join('') +
-          (s.reactCount ? '<span>' + esc(s.reactCount) + '</span>' : '') + '</span><span class="fb-counts">' + counts + '</span></div>' : '') +
+          (s.reactCount ? '<span>' + E('reactCount', s.reactCount) + '</span>' : '') + '</span><span class="fb-counts">' + counts + '</span></div>' : '') +
         '<div class="fb-acts"><span>' + I.thumb + 'Like</span><span>' + I.bubble + 'Comment</span><span>' + I.share + 'Share</span></div>' +
         (comments ? '<div class="fb-comments">' + comments + '</div>' : '') + '</div>';
     }
@@ -477,16 +477,16 @@
     ],
     render: function (s) {
       var out = '', prev = null;
-      (s.msgs || []).forEach(function (m) {
+      (s.msgs || []).forEach(function (m, _i) {
         var who = m.from === 'me' ? 'me' : 'them';
         if (who !== prev) out += '<div class="sc-name ' + who + '">' + (who === 'me' ? 'ME' : esc(String(s.name).toUpperCase())) + '</div>';
-        out += '<div class="sc-msg ' + who + '">' + (m.image ? '<img src="' + m.image + '" alt="">' : '') +
-          (m.text ? '<div>' + br(m.text) + '</div>' : '') + '</div>';
+        out += '<div class="sc-msg ' + who + '">' + (m.image ? '<img src="' + m.image + '"' + DI('msgs.' + _i + '.image') + ' alt="">' : '') +
+          (m.text ? '<div>' + EB('msgs.' + _i + '.text', m.text) + '</div>' : '') + '</div>';
         prev = who;
       });
       return '<div class="shot sc">' + U.statusBar(s) +
-        '<div class="sc-head"><span class="sc-ic">' + I.chevron + '</span>' + ava(s.photo, s.name, 'sc-ava') +
-        '<div class="sc-who"><b>' + esc(s.name) + '</b>' + (s.streak ? '<span>' + esc(s.streak) + '</span>' : '') + '</div>' +
+        '<div class="sc-head"><span class="sc-ic">' + I.chevron + '</span>' + ava(s.photo, s.name, 'sc-ava', undefined, 'photo') +
+        '<div class="sc-who"><b>' + E('name', s.name) + '</b>' + (s.streak ? '<span>' + E('streak', s.streak) + '</span>' : '') + '</div>' +
         '<span class="sc-ic">' + I.phone + '</span><span class="sc-ic">' + I.video + '</span></div>' +
         '<div class="sc-body">' + out + '</div>' +
         '<div class="sc-input"><span class="sc-cam">' + I.snapCam + '</span><span class="sc-field">Send a chat</span>' +
@@ -517,14 +517,14 @@
     ],
     render: function (s) {
       var blur = s.look === 'blur' && s.cover;
-      var bgLayer = blur ? '<img class="am-blur" src="' + s.cover + '" alt=""><div class="am-dim"></div>' : '';
+      var bgLayer = blur ? '<img class="am-blur" src="' + s.cover + '"' + DI('cover') + ' alt=""><div class="am-dim"></div>' : '';
       var card = '<div class="am-card sz-' + s.size + '" style="background:linear-gradient(160deg,' + U.shade(s.bg, 0.12) + ',' + U.shade(s.bg, -0.45) + ')">' + bgLayer +
-        '<div class="am-in"><div class="am-top">' + (s.cover ? '<img class="am-cover" src="' + s.cover + '" alt="">' : '<div class="am-cover am-noart"></div>') +
-        '<div class="am-meta"><b>' + esc(s.title) + '</b><span>' + esc(s.artist) + '</span></div></div>' +
-        '<div class="am-lyrics">' + br(s.lyrics) + '</div>' +
+        '<div class="am-in"><div class="am-top">' + (s.cover ? '<img class="am-cover" src="' + s.cover + '"' + DI('cover') + ' alt="">' : '<div class="am-cover am-noart"></div>') +
+        '<div class="am-meta"><b>' + E('title', s.title) + '</b><span>' + E('artist', s.artist) + '</span></div></div>' +
+        '<div class="am-lyrics">' + EB('lyrics', s.lyrics) + '</div>' +
         '<div class="am-logo">' + AM_LOGO + '<span>Music</span></div></div></div>';
       if (s.frame === 'story') {
-        return '<div class="shot am-story" style="background:' + U.shade(s.bg, -0.6) + '">' + (s.cover ? '<img class="am-blur" src="' + s.cover + '" alt=""><div class="am-dim"></div>' : '') + card + '</div>';
+        return '<div class="shot am-story" style="background:' + U.shade(s.bg, -0.6) + '">' + (s.cover ? '<img class="am-blur" src="' + s.cover + '"' + DI('cover') + ' alt=""><div class="am-dim"></div>' : '') + card + '</div>';
       }
       return '<div class="shot am-solo">' + card + '</div>';
     }
@@ -560,16 +560,16 @@
     ],
     render: function (s) {
       return '<div class="shot pn t-' + s.theme + '">' +
-        (s.image ? '<img class="pn-img" src="' + s.image + '" alt="">' : '<div class="pn-img pn-noimg"></div>') +
-        '<div class="pn-bar"><span class="pn-ic">' + I.heart + '</span>' + (s.likes ? '<b>' + esc(s.likes) + '</b>' : '') +
-        '<span class="pn-ic">' + I.bubble + '</span>' + (s.comments ? '<b>' + esc(s.comments) + '</b>' : '') +
+        (s.image ? '<img class="pn-img" src="' + s.image + '"' + DI('image') + ' alt="">' : '<div class="pn-img pn-noimg"></div>') +
+        '<div class="pn-bar"><span class="pn-ic">' + I.heart + '</span>' + (s.likes ? '<b>' + E('likes', s.likes) + '</b>' : '') +
+        '<span class="pn-ic">' + I.bubble + '</span>' + (s.comments ? '<b>' + E('comments', s.comments) + '</b>' : '') +
         '<span class="pn-ic">' + I.share + '</span><span class="pn-ic">' + I.dots + '</span><span class="pn-grow"></span>' +
-        (s.board ? '<span class="pn-board">' + esc(s.board) + I.down + '</span>' : '') +
+        (s.board ? '<span class="pn-board">' + E('board', s.board) + I.down + '</span>' : '') +
         '<span class="pn-save' + (s.saved ? ' on' : '') + '">' + (s.saved ? 'Saved' : 'Save') + '</span></div>' +
-        (s.title ? '<div class="pn-title">' + esc(s.title) + '</div>' : '') +
-        (s.desc ? '<div class="pn-desc">' + br(s.desc) + '</div>' : '') +
-        '<div class="pn-user">' + ava(s.avatar, s.user, 'pn-ava') + '<div class="pn-who"><b>' + esc(s.user) + '</b>' +
-        (s.followers ? '<span>' + esc(s.followers) + ' followers</span>' : '') + '</div><span class="pn-follow">Follow</span></div></div>';
+        (s.title ? '<div class="pn-title">' + E('title', s.title) + '</div>' : '') +
+        (s.desc ? '<div class="pn-desc">' + EB('desc', s.desc) + '</div>' : '') +
+        '<div class="pn-user">' + ava(s.avatar, s.user, 'pn-ava', undefined, 'avatar') + '<div class="pn-who"><b>' + E('user', s.user) + '</b>' +
+        (s.followers ? '<span>' + E('followers', s.followers) + ' followers</span>' : '') + '</div><span class="pn-follow">Follow</span></div></div>';
     }
   });
 
@@ -619,12 +619,12 @@
     render: function (s) {
       var list = s.msgs || [];
       var out = list.map(function (m, i) {
-        if (m.from === 'me') return '<div class="gpt-me"><div>' + br(m.text) + '</div></div>';
+        if (m.from === 'me') return '<div class="gpt-me"><div>' + EB('msgs.' + i + '.text', m.text) + '</div></div>';
         var last = !list.slice(i + 1).some(function (x) { return x.from === 'ai'; });
-        return '<div class="gpt-ai">' + md(m.text) +
+        return '<div class="gpt-ai">' + EW('msgs.' + i + '.text', md(m.text)) +
           (last ? '<div class="gpt-acts">' + I_COPY + I.thumb + flip(I.thumb) + I.share + I_RETRY + '</div>' : '') + '</div>';
       }).join('');
-      return '<div class="shot gpt t-' + s.theme + '"><div class="gpt-head"><b>ChatGPT</b>' + (s.model ? '<span>' + esc(s.model) + '</span>' : '') + I.down + '</div>' +
+      return '<div class="shot gpt t-' + s.theme + '"><div class="gpt-head"><b>ChatGPT</b>' + (s.model ? '<span>' + E('model', s.model) + '</span>' : '') + I.down + '</div>' +
         '<div class="gpt-body">' + out + '</div>' +
         (s.input ? '<div class="gpt-input"><span>Ask anything</span><div>' + ICON.plus + '<i></i>' + I.mic + '</div></div>' : '') + '</div>';
     }
@@ -662,17 +662,17 @@
       var list = s.msgs || [];
       var out = list.map(function (m, i) {
         if (m.from === 'me') {
-          return '<div class="cl-me"><span class="cl-init">' + esc((String(s.me).match(/./u) || [''])[0].toUpperCase()) + '</span><div>' + br(m.text) + '</div></div>';
+          return '<div class="cl-me"><span class="cl-init">' + E('me', (String(s.me).match(/./u) || [''])[0].toUpperCase()) + '</span><div>' + EB('msgs.' + i + '.text', m.text) + '</div></div>';
         }
         var last = !list.slice(i + 1).some(function (x) { return x.from === 'ai'; });
-        return '<div class="cl-ai">' + md(m.text) +
+        return '<div class="cl-ai">' + EW('msgs.' + i + '.text', md(m.text)) +
           (last ? '<div class="cl-foot">' + SPARK + '<span class="cl-acts">' + I_COPY + I.thumb + flip(I.thumb) + I_RETRY + '</span></div>' : '') + '</div>';
       }).join('');
       return '<div class="shot cl t-' + s.theme + ' f-' + s.font + '">' +
-        (s.title ? '<div class="cl-head">' + esc(s.title) + I.down + '</div>' : '') +
+        (s.title ? '<div class="cl-head">' + E('title', s.title) + I.down + '</div>' : '') +
         '<div class="cl-body">' + out + '</div>' +
         (s.input ? '<div class="cl-input"><span>Reply to Claude…</span><div class="cl-row"><span class="cl-plus">' + ICON.plus + '</span>' +
-          '<span class="cl-grow"></span>' + (s.model ? '<span class="cl-model">' + esc(s.model) + I.down + '</span>' : '') +
+          '<span class="cl-grow"></span>' + (s.model ? '<span class="cl-model">' + E('model', s.model) + I.down + '</span>' : '') +
           '<span class="cl-send">' + stroke('M12 19V5M5.5 11.5 12 5l6.5 6.5', 2.2) + '</span></div></div>' : '') + '</div>';
     }
   });
@@ -681,6 +681,14 @@
 
   var G_SPARK = '<svg viewBox="0 0 24 24"><defs><linearGradient id="gsp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4285f4"/><stop offset=".5" stop-color="#9b72cb"/><stop offset="1" stop-color="#d96570"/></linearGradient></defs>' +
     '<path fill="url(#gsp)" d="M12 2c.6 5.2 4.8 9.4 10 10-5.2.6-9.4 4.8-10 10-.6-5.2-4.8-9.4-10-10 5.2-.6 9.4-4.8 10-10z"/></svg>';
+  function sitelinks(t) {
+    var rows = String(t || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    if (!rows.length) return '';
+    return '<div class="g-links">' + rows.map(function (l) {
+      var m = /^(.*?)\s+[-–—]\s+(.*)$/.exec(l);
+      return '<div class="g-link"><div class="g-ltitle">' + esc(m ? m[1] : l) + '</div>' + (m ? '<div class="g-ldesc">' + esc(m[2]) + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
   var G_LOGO = '<span class="g-logo"><i style="color:#4285f4">G</i><i style="color:#ea4335">o</i><i style="color:#fbbc05">o</i><i style="color:#4285f4">g</i><i style="color:#34a853">l</i><i style="color:#ea4335">e</i></span>';
 
   TOOLS.push({
@@ -693,7 +701,7 @@
       { key: 'ai', type: 'toggle', label: 'ai overview' },
       { key: 'aiText', type: 'textarea', label: 'ai overview text', rows: 4 },
       { type: 'head', label: 'results' },
-      { key: 'list', type: 'list', adds: [{ label: '+ result', item: item({ icon: '', site: '', url: '', title: '', date: '', snippet: '' }) }], item: [
+      { key: 'list', type: 'list', adds: [{ label: '+ result', item: item({ icon: '', site: '', url: '', title: '', date: '', snippet: '', links: '' }) }], item: [
         { key: 'icon', type: 'image', label: 'site icon', max: 100 },
         { type: 'row', fields: [
           { key: 'site', type: 'text', label: 'site name' },
@@ -703,24 +711,25 @@
         { type: 'row', fields: [
           { key: 'date', type: 'text', label: 'date' }
         ] },
-        { key: 'snippet', type: 'textarea', label: 'snippet', rows: 2 }
+        { key: 'snippet', type: 'textarea', label: 'snippet', rows: 2 },
+        { key: 'links', type: 'textarea', label: 'sitelinks (one per line, title - description)', rows: 3 }
       ] }
     ],
     render: function (s) {
       var tabs = ['All', 'Images', 'Videos', 'News', 'Shopping', 'Web'].map(function (t, i) {
         return '<span' + (i ? '' : ' class="on"') + '>' + t + '</span>';
       }).join('');
-      var results = (s.list || []).map(function (r) {
-        return '<div class="g-r"><div class="g-src">' + ava(r.icon, r.site, 'g-fav') +
-          '<div class="g-site"><span>' + esc(r.site) + '</span><small>' + esc(r.url) + '</small></div>' + I.dots + '</div>' +
-          '<div class="g-title">' + esc(r.title) + '</div>' +
-          '<div class="g-snip">' + (r.date ? '<span>' + esc(r.date) + ' — </span>' : '') + esc(r.snippet) + '</div></div>';
+      var results = (s.list || []).map(function (r, _i) {
+        return '<div class="g-r"><div class="g-src">' + ava(r.icon, r.site, 'g-fav', undefined, 'list.' + _i + '.icon') +
+          '<div class="g-site"><span>' + E('list.' + _i + '.site', r.site) + '</span><small>' + E('list.' + _i + '.url', r.url) + '</small></div>' + I.dots + '</div>' +
+          '<div class="g-title">' + E('list.' + _i + '.title', r.title) + '</div>' +
+          '<div class="g-snip">' + (r.date ? '<span>' + E('list.' + _i + '.date', r.date) + ' — </span>' : '') + E('list.' + _i + '.snippet', r.snippet) + '</div>' + EW('list.' + _i + '.links', sitelinks(r.links)) + '</div>';
       }).join('');
       return '<div class="shot g t-' + s.theme + '"><div class="g-top">' + G_LOGO +
-        '<div class="g-bar"><span class="g-q">' + esc(s.query) + '</span><span class="g-icons">' + I.x + '<i></i>' + I.mic +
+        '<div class="g-bar"><span class="g-q">' + E('query', s.query) + '</span><span class="g-icons">' + I.x + '<i></i>' + I.mic +
         '<span class="g-search">' + stroke('M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.5 15.5 20 20', 2.2) + '</span></span></div></div>' +
         '<div class="g-tabs">' + tabs + '</div>' +
-        (s.ai ? '<div class="g-ai"><div class="g-aihead">' + G_SPARK + '<b>AI Overview</b></div><div class="g-aitext">' + md(s.aiText) + '</div></div>' : '') +
+        (s.ai ? '<div class="g-ai"><div class="g-aihead">' + G_SPARK + '<b>AI Overview</b></div><div class="g-aitext">' + EW('aiText', md(s.aiText)) + '</div></div>' : '') +
         '<div class="g-results">' + results + '</div></div>';
     }
   });
@@ -769,12 +778,12 @@
       var a = WH_ALIGN[s.align] || WH_ALIGN.center;
       var font = "'" + s.font + "', 'Noto Color Emoji'" + (s.font === 'TikTok Sans' ? ';font-weight:500' : '');
       var box = 'font-family:' + font + ';font-size:' + s.size + 'em;justify-content:' + a[0] + ';align-items:' + a[1] + ';text-align:' + a[2];
-      var txt = esc(s.text);
+      var txt = E('text', s.text);
       var ring = s.outline ? WH_RING.map(function (p) {
         return '<div class="wh-t wh-evil" style="' + box + ';left:' + p[0] + 'em;top:' + p[1] + 'em;color:' + s.outlineColor + '">' + txt + '</div>';
       }).join('') : '';
       return '<div class="shot wh">' +
-        (s.image ? '<img class="wh-img" src="' + s.image + '" alt="">' : '<div class="wh-img wh-noimg"></div>') +
+        (s.image ? '<img class="wh-img" src="' + s.image + '"' + DI('image') + ' alt="">' : '<div class="wh-img wh-noimg"></div>') +
         '<div class="wh-wrap"><div class="wh-move" style="transform:translate(' + (s.dx || 0) + 'px,' + (s.dy || 0) + 'px)">' +
         '<div class="wh-t" style="' + box + ';color:' + s.color + '"><span class="wh-span">' + txt + '</span></div>' + ring +
         '</div></div></div>';
@@ -784,19 +793,32 @@
       var span = shot.querySelector('.wh-span'), move = shot.querySelector('.wh-move');
       if (!span) return;
       var start = null;
+      // a click types (the words are editable), a drag moves them
       span.addEventListener('pointerdown', function (e) {
-        start = { x: e.clientX, y: e.clientY, dx: s.dx || 0, dy: s.dy || 0 };
-        span.setPointerCapture(e.pointerId);
-        e.preventDefault();
+        start = { x: e.clientX, y: e.clientY, dx: s.dx || 0, dy: s.dy || 0, moving: false, id: e.pointerId };
       });
       span.addEventListener('pointermove', function (e) {
         if (!start) return;
+        if (!start.moving) {
+          if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) < 6) return;
+          start.moving = true;
+          span.setPointerCapture(start.id);
+          window.getSelection().removeAllRanges();
+        }
+        e.preventDefault();
         var k = app.scale() || 1;
         s.dx = Math.round(start.dx + (e.clientX - start.x) / k);
         s.dy = Math.round(start.dy + (e.clientY - start.y) / k);
         move.style.transform = 'translate(' + s.dx + 'px,' + s.dy + 'px)';
       });
-      function end() { if (start) { start = null; app.save(); } }
+      function end() {
+        if (start && start.moving) {
+          app.save();
+          // done dragging: drop the typing cursor so the picture redraws in its new spot
+          if (document.activeElement && span.contains(document.activeElement)) document.activeElement.blur();
+        }
+        start = null;
+      }
       span.addEventListener('pointerup', end);
       span.addEventListener('pointercancel', end);
     }
@@ -888,16 +910,17 @@
     ],
     render: function (s) {
       var emotes = {};
-      (s.emotes || []).forEach(function (e) { if (e.code && e.image) emotes[e.code] = e.image; });
-      var chat = (s.chat || []).map(function (c) {
+      (s.emotes || []).forEach(function (e, _i) { if (e.code && e.image) emotes[e.code] = e.image; });
+      var chat = (s.chat || []).map(function (c, _i) {
         var words = String(c.text || '').split(/(\s+)/).map(function (w) {
           if (emotes[w]) return '<img class="tv-emote" src="' + emotes[w] + '" alt="">';
           return esc(w).replace(/^@[\w]+/, function (m) { return '<b class="tv-at">' + m + '</b>'; });
         }).join('');
+        words = EW('chat.' + _i + '.text', words);
         var badges = (c.badge || 'none').split('+').map(function (b) { return TW_BADGE[b] ? '<span class="tv-badge">' + TW_BADGE[b] + '</span>' : ''; }).join('');
-        return '<div class="tv-msg">' + badges + '<b class="tv-name" style="color:' + esc(c.color) + '">' + esc(c.name) + '</b><span class="tv-colon">: </span>' + words + '</div>';
+        return '<div class="tv-msg">' + badges + '<b class="tv-name" style="color:' + esc(c.color) + '">' + E('chat.' + _i + '.name', c.name) + '</b><span class="tv-colon">: </span>' + words + '</div>';
       }).join('');
-      var cam = s.cam ? '<img class="tv-cam c-' + s.camCorner + (s.camBorder ? ' bordered' : '') + '" style="width:' + s.camSize + '%" src="' + s.cam + '" alt="">' : '';
+      var cam = s.cam ? '<img class="tv-cam c-' + s.camCorner + (s.camBorder ? ' bordered' : '') + '" style="width:' + s.camSize + '%" src="' + s.cam + '"' + DI('cam') + ' alt="">' : '';
       // the goal sits right under the cam (or right above it when the cam is on the bottom)
       var goal = '';
       if (s.goalText || s.goalMax) {
@@ -908,22 +931,22 @@
         var pct = max > 0 ? Math.max(0, Math.min(100, (now || 0) / max * 100)) : -1;
         var fam = "'" + s.goalFont + "', 'Noto Color Emoji', sans-serif";
         goal = '<div class="tv-goal' + (s.goalBox ? ' boxed' : '') + (left ? '' : ' r') + '" style="' + pos + 'font-family:' + fam + ';font-size:' + s.goalSize + 'px;color:' + s.goalColor + '">' +
-          (s.goalText ? '<div class="tv-goaltext">' + esc(s.goalText) + '</div>' : '') +
-          (pct >= 0 ? '<div class="tv-goalbar"><i style="width:' + pct + '%;background:' + s.goalBar + '"></i><span>' + esc(s.goalNow || '0') + ' / ' + esc(s.goalMax) + '</span></div>' : '') + '</div>';
+          (s.goalText ? '<div class="tv-goaltext">' + E('goalText', s.goalText) + '</div>' : '') +
+          (pct >= 0 ? '<div class="tv-goalbar"><i style="width:' + pct + '%;background:' + s.goalBar + '"></i><span>' + E('goalNow', s.goalNow) + ' / ' + E('goalMax', s.goalMax) + '</span></div>' : '') + '</div>';
       }
       var overlay = s.chatMode === 'overlay';
       var chatBox = '<div class="tv-chat' + (overlay ? ' over' : '') + '" style="--op:' + (s.chatOpacity == null ? 100 : s.chatOpacity) + '%">' +
         (overlay ? '' : '<div class="tv-chathead">STREAM CHAT</div>') + '<div class="tv-msgs">' + chat + '</div>' +
         (overlay ? '' : '<div class="tv-input"><span>Send a message</span></div><div class="tv-chatbtns"><span class="tv-chatbtn">Chat</span></div>') + '</div>';
       return '<div class="shot tv t-' + s.theme + (overlay ? ' overlay' : '') + '"><div class="tv-left">' +
-        '<div class="tv-video">' + (s.stream ? '<img class="tv-screen" src="' + s.stream + '" alt="">' : '') + cam + goal + (overlay ? chatBox : '') + '</div>' +
-        '<div class="tv-info"><div class="tv-ava-wrap' + (s.live ? ' live' : '') + '">' + ava(s.avatar, s.name, 'tv-ava') + (s.live ? '<span class="tv-livebadge">LIVE</span>' : '') + '</div>' +
-        '<div class="tv-meta"><div class="tv-name-row"><b>' + esc(s.name) + '</b>' + (s.name ? '<span class="tv-check">' + ICON.verified + '</span>' : '') + '</div>' +
-        '<div class="tv-title">' + esc(s.title) + '</div>' +
-        '<div class="tv-cat">' + esc(s.category) + '</div></div>' +
+        '<div class="tv-video">' + (s.stream ? '<img class="tv-screen" src="' + s.stream + '"' + DI('stream') + ' alt="">' : '') + cam + goal + (overlay ? chatBox : '') + '</div>' +
+        '<div class="tv-info"><div class="tv-ava-wrap' + (s.live ? ' live' : '') + '">' + ava(s.avatar, s.name, 'tv-ava', undefined, 'avatar') + (s.live ? '<span class="tv-livebadge">LIVE</span>' : '') + '</div>' +
+        '<div class="tv-meta"><div class="tv-name-row"><b>' + E('name', s.name) + '</b>' + (s.name ? '<span class="tv-check">' + ICON.verified + '</span>' : '') + '</div>' +
+        '<div class="tv-title">' + E('title', s.title) + '</div>' +
+        '<div class="tv-cat">' + E('category', s.category) + '</div></div>' +
         '<div class="tv-right-meta"><div class="tv-btns"><span class="tv-follow">' + I.heart + 'Follow</span><span class="tv-sub">' + ICON.verified.replace('<svg', '<svg class="tv-star"') + 'Subscribe</span></div>' +
-        '<div class="tv-stats">' + (s.viewers ? '<span class="tv-viewers">' + stroke('M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5', 2) + esc(s.viewers) + '</span>' : '') +
-        (s.uptime ? '<span>' + esc(s.uptime) + '</span>' : '') + '</div></div></div></div>' +
+        '<div class="tv-stats">' + (s.viewers ? '<span class="tv-viewers">' + stroke('M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5', 2) + E('viewers', s.viewers) + '</span>' : '') +
+        (s.uptime ? '<span>' + E('uptime', s.uptime) + '</span>' : '') + '</div></div></div></div>' +
         (overlay ? '' : chatBox) + '</div>';
     }
   });
@@ -963,7 +986,7 @@
       var k = (+s.squish || 100) / 100;
       return '<div class="shot brat sh-' + s.shape + '" style="background:' + s.bg + '">' +
         '<div class="brat-t a-' + s.align + '" style="color:' + s.fg + ';font-size:' + s.size + 'px;filter:blur(' + s.blur + 'px);' +
-        'transform:scaleX(' + k + ');width:' + (100 / k) + '%">' + br(t) + '</div></div>';
+        'transform:scaleX(' + k + ');width:' + (100 / k) + '%">' + EW('text', br(t)) + '</div></div>';
     }
   });
 

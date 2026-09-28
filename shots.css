@@ -321,3 +321,4 @@
 .nt-body { font-size: 17px; line-height: 1.4; overflow-wrap: break-word; }
 .nt-bar { display: flex; justify-content: space-between; padding: 12px 26px 34px; color: var(--acc); }
 .nt-bar svg { width: 26px; height: 26px; }
+.exporting .tb-tags:has(> [data-e]:empty) { display: none; }

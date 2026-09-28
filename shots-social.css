@@ -655,3 +655,7 @@
 .brat-t.a-left { text-align: left; }
 .brat-t.a-right { text-align: right; }
 .brat-t.a-justify { text-align: justify; text-align-last: justify; }
+
+.g-links { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 40px; margin: 14px 0 0 22px; }
+.g-ltitle { font-size: 18px; color: var(--link); }
+.g-ldesc { margin-top: 2px; font-size: 14px; line-height: 1.5; color: var(--sub); overflow-wrap: break-word; }

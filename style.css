@@ -221,3 +221,15 @@ button.small { padding: 6px 10px; font-size: 11px; }
   #editor { width: auto; border-right: 0; border-top: 1px solid var(--line); overflow: visible; }
   #view { overflow: hidden; }
 }
+
+/* ---------- click-to-type on the preview ---------- */
+
+#fit [data-e] { outline: none; cursor: text; border-radius: 3px; min-width: .5em; }
+#fit [data-e]:hover { box-shadow: 0 0 0 1.5px rgba(255, 61, 154, .75); }
+#fit [data-e]:focus { box-shadow: 0 0 0 2px #ff3d9a; }
+#fit [data-e]:empty::before { content: attr(data-ph); opacity: .38; }
+#fit [data-img] { cursor: pointer; }
+#fit [data-img]:hover { outline: 2px dashed #ff3d9a; outline-offset: -2px; }
+#fit.exporting [data-e] { box-shadow: none !important; }
+#fit.exporting [data-e]:empty::before { content: none; }
+#fit.exporting [data-img] { outline: none !important; }
