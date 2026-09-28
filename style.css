@@ -233,11 +233,3 @@ button.small { padding: 6px 10px; font-size: 11px; }
 #fit.exporting [data-e] { box-shadow: none !important; }
 #fit.exporting [data-e]:empty::before { content: none; }
 #fit.exporting [data-img] { outline: none !important; }
-
-/* game sprite loader + picker */
-.gt-load { display: flex; align-items: center; gap: 10px; }
-.gt-have { font-size: 12px; color: var(--dim); }
-.gt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; max-height: 260px; overflow-y: auto; margin-bottom: 10px; }
-.gt-cell { display: flex; align-items: center; justify-content: center; height: 56px; padding: 4px; background: var(--field); border: 2px solid transparent; border-radius: 8px; }
-.gt-cell.on { border-color: var(--pink); }
-.gt-cell img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }

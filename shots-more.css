@@ -185,84 +185,6 @@
 .az-btn { padding: 5px 20px; border: 1px solid #888c8c; border-radius: 999px; color: #0f1111; }
 .az-btns i { width: 1px; height: 18px; background: #ddd; }
 
-/* ============ game text ============ */
-
-@font-face { font-family: SVThin; src: url(fonts/SVThin.ttf) format('truetype'); }
-@font-face { font-family: SVBold; src: url(fonts/SVBold.ttf) format('truetype'); }
-
-.gt { width: 720px; height: 540px; background: #88c070; }
-.gt-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.gt img, .gt-face { image-rendering: pixelated; }
-
-/* letters cut from a game's own font (game.js) */
-.gl { display: inline-block; position: relative; vertical-align: top; }
-.gl b { position: absolute; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-.gl-line { display: block; }
-.gl-word { display: inline-block; white-space: nowrap; }
-
-/* stardew: 1280x720, colors sampled from Maps/MenuTiles */
-.gt.g-stardew { width: 1280px; height: 720px; background: #5d8a3a; }
-.sv-box {
-  position: absolute;
-  left: 40px;
-  right: 40px;
-  bottom: 16px;
-  height: 364px;
-  display: flex;
-  background: linear-gradient(#ffcb7b, #eba867);
-  border: 4px solid #5b2b2a;
-  box-shadow: inset 0 0 0 4px #fa9305, inset 0 0 0 8px #b14e05, inset 0 0 0 12px #853605, inset 0 0 0 16px #c47a48, 0 4px 0 rgba(0, 0, 0, .35);
-}
-.sv-k {
-  position: absolute;
-  z-index: 2;
-  width: 28px;
-  height: 28px;
-  background: #b14e05;
-  box-shadow: inset 0 0 0 4px #5b2b2a;
-}
-.sv-k::after { content: ''; position: absolute; left: 8px; top: 8px; width: 12px; height: 12px; background: #fa9305; box-shadow: inset 4px 4px 0 #ffb805; }
-.sv-k.tl { left: -10px; top: -10px; }
-.sv-k.tr { right: -10px; top: -10px; }
-.sv-k.bl { left: -10px; bottom: -10px; }
-.sv-k.br { right: -10px; bottom: -10px; }
-.sv-text { flex: 1; min-width: 0; padding: 40px 32px 30px 44px; color: #221122; filter: drop-shadow(-3px 0 0 #ce9c5f) drop-shadow(0 3px 0 #ce9c5f); }
-.sv-fallback { font-family: SVThin, 'Noto Color Emoji', monospace; font-size: 44px; line-height: 50px; overflow-wrap: break-word; }
-.sv-div {
-  position: relative;
-  width: 20px;
-  flex: none;
-  background: linear-gradient(90deg, #5b2b2a 0 4px, #dc7b05 4px 8px, #b14e05 8px 12px, #853605 12px 16px, #5b2b2a 16px 20px);
-}
-.sv-k.t { left: -4px; top: -10px; }
-.sv-k.b { left: -4px; bottom: -10px; }
-.sv-side { width: 330px; flex: none; display: flex; flex-direction: column; align-items: center; padding-top: 30px; }
-.sv-portrait { width: 256px; height: 256px; }
-.sv-portrait .gt-face { width: 256px; height: 256px; }
-.sv-name { margin-top: 10px; color: #221122; font-family: SVThin, monospace; font-size: 44px; line-height: 50px; filter: drop-shadow(-3px 0 0 #ce9c5f) drop-shadow(0 3px 0 #ce9c5f); text-align: center; }
-.sv-name.real { font-size: 0; line-height: 0; }
-
-/* undertale / deltarune: 640x480, box 578x152 with a 6px white edge (the game's 3px at 2x) */
-.gt.g-undertale, .gt.g-deltarune { width: 640px; height: 480px; background: #000; }
-.ut-box { position: absolute; left: 31px; width: 578px; height: 152px; bottom: 8px; background: #000; border: 6px solid #fff; }
-.ut-box.top { top: 10px; bottom: auto; }
-.g-deltarune .ut-box { border-width: 4px; box-shadow: 0 0 0 2px #000, inset 0 0 0 2px #000; }
-.ut-box .gt-face { position: absolute; left: 50px; top: 50%; transform: translate(-50%, -50%); max-height: 136px; }
-.ut-box .gt-face.empty { display: none; }
-.ut-text { position: absolute; left: 22px; right: 12px; top: 14px; color: #fff; }
-.has-face .ut-text { left: 116px; }
-.ut-line { display: flex; }
-.ut-star { flex: none; width: 32px; }
-.ut-body { flex: 1; min-width: 0; }
-.ut-fallback { font-family: VT323, monospace; font-size: 34px; line-height: 34px; overflow-wrap: break-word; }
-.ut-fallback.k-sans { font-family: 'Comic Sans MS', cursive; font-size: 26px; }
-.ut-fallback.k-papyrus { font-family: Papyrus, fantasy; font-size: 26px; }
-
-/* pokemon */
-.pk-box { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 130px; padding: 6px; border-radius: 12px; background: #fff; border: 5px solid #484860; box-shadow: inset 0 0 0 4px #70c8b8; }
-.pk-in { height: 100%; padding: 12px 22px; font-family: 'Pixelify Sans', 'Noto Color Emoji', monospace; font-size: 30px; line-height: 1.35; color: #484848; text-shadow: 2px 2px 0 #d0d0c8; overflow-wrap: break-word; position: relative; }
-.pk-arrow { position: absolute; right: 16px; bottom: 12px; border: 9px solid transparent; border-top: 11px solid #e83030; border-bottom: 0; }
-
 /* ============ now playing lock screen ============ */
 
 .ls { width: 390px; height: 844px; color: #fff; font-family: Inter, -apple-system, 'Noto Color Emoji', sans-serif; background: linear-gradient(160deg, #3b3550, #0e0d14); }
@@ -325,20 +247,3 @@
 .call-ui, .ls-ui { pointer-events: none; }
 .call-ui > *, .ls-ui > * { pointer-events: auto; }
 .call-grow, .ls-grow { pointer-events: none !important; }
-
-/* stardew's real box (pieces from the player's own game, see svRealBox) */
-.svr { position: absolute; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
-.svr-text { position: absolute; color: #221122; filter: drop-shadow(-3px 0 0 #ce9c5f) drop-shadow(0 3px 0 #ce9c5f); }
-.svr-pic { position: absolute; width: 256px; height: 256px; }
-.svr-face { display: block; width: 256px; height: 256px; }
-.svr-name {
-  position: absolute;
-  width: 296px;
-  text-align: center;
-  font-family: SVBold, monospace;
-  font-size: 36px;
-  line-height: 40px;
-  color: #56160c;
-  filter: drop-shadow(4px 4px 0 #e09650);
-  white-space: nowrap;
-}
