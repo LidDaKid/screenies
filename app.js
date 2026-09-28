@@ -519,7 +519,20 @@
     ed.scrollTop = top;
   }
 
+  // symbols + fonts live in copypaste/ and show in a frame instead of the editor
+  var EXTRAS = { symbols: 'symbols', fonts: 'fonts' }, frame = $('#extraFrame');
+  function openExtra(id) {
+    document.body.classList.add('extra-on');
+    var url = 'copypaste/index.html?embed#' + id;
+    if (!frame.getAttribute('src')) frame.setAttribute('src', url);
+    else frame.contentWindow.location.hash = id;
+    [].forEach.call(tabs.children, function (a) { a.classList.toggle('on', a.dataset.id === id); });
+    document.title = 'screenies · ' + id;
+  }
+
   function open(id) {
+    if (EXTRAS[id]) return openExtra(id);
+    document.body.classList.remove('extra-on');
     var t = TOOLS.filter(function (x) { return x.id === id; })[0] || TOOLS[0];
     tool = t;
     st = load(t);
@@ -542,6 +555,12 @@
     var a = el('a', '', U.esc(t.label));
     a.href = '#' + t.id;
     a.dataset.id = t.id;
+    tabs.appendChild(a);
+  });
+  Object.keys(EXTRAS).forEach(function (id) {
+    var a = el('a', 'extra', id);
+    a.href = '#' + id;
+    a.dataset.id = id;
     tabs.appendChild(a);
   });
 
