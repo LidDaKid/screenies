@@ -83,7 +83,8 @@ function bare(v) { return v === GHOST ? '' : v; }
 function E(path, v) { return '<span data-e="' + path + '">' + U.esc(bare(v)) + '</span>'; }
 function EB(path, v) { return '<span data-e="' + path + '" data-ml>' + U.br(bare(v)) + '</span>'; }
 function EW(path, html) {
-  var empty = !html.replace(/<[^>]*>/g, '').replace(/\u200b/g, '').trim();
+  // empty = no letters and no pictures (text drawn with a game's own letters is all pictures)
+  var empty = !/<(img|i class="gl)/.test(html) && !html.replace(/<[^>]*>/g, '').replace(/\u200b/g, '').trim();
   return '<span data-e="' + path + '" data-ml>' + (empty ? '' : html) + '</span>';
 }
 function DI(path) { return ' data-img="' + path + '"'; }

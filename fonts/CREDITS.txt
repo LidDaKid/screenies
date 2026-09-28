@@ -1,0 +1,10 @@
+Fonts in this folder (all under the SIL Open Font License 1.1, https://openfontlicense.org):
+
+- SVBold.ttf, SVThin.ttf — by Omniros (2018), fan recreations of the Stardew Valley fonts.
+  https://fontstruct.com/fontstructions/show/1543428/svbold
+  https://fontstruct.com/fontstructions/show/1543912/svthin
+- macsMinecraft-*.woff2 — by macimas (2024), recreation of the Minecraft font. See macsMinecraft-OFL.txt.
+  https://github.com/macimas-fonts/macsMinecraft
+
+Game sprites/fonts from Stardew Valley, Undertale and Deltarune are NOT included here: the site reads them
+from the player's own installed copy of the game, in their browser.

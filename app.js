@@ -330,6 +330,7 @@
         obj[f.key] = input.value;
         if (f.onPick) f.onPick(obj);
         onChange();
+        if (f.rebuild) buildForm(); // other controls depend on this choice
       });
       if (typeof f.options === 'function') {
         refreshers.push(function () {
@@ -444,6 +445,9 @@
 
     if (f.type === 'list') return listField(f);
 
+    // tool-made controls (game loader, sprite picker)
+    if (f.type === 'custom') return f.build(obj, { changed: onChange, rebuild: function () { buildForm(); render(); }, state: function () { return st; } });
+
     return el('div');
   }
 
@@ -542,6 +546,8 @@
   });
 
   window.addEventListener('hashchange', function () { open(location.hash.slice(1)); });
+  // game sprites finished loading (or were forgotten): refresh whatever tool uses them
+  if (window.GA) GA.onChange(function () { if (tool && tool.usesGames) { buildForm(); render(); } });
   window.addEventListener('resize', refit);
 
   $('#reset').addEventListener('click', function () {
