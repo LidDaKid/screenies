@@ -336,8 +336,111 @@
     }
   });
 
+  /* ============================== roblox profile ============================== */
+
+  var RB_STATUS = [['playing', 'playing a game'], ['online', 'online'], ['studio', 'in studio'], ['offline', 'offline']];
+  // the little dot on the headshot (roblox's colors: blue in-game, green online, orange studio)
+  function rbDot(status, cls) {
+    if (status === 'offline') return '';
+    if (status === 'playing') return '<i class="rb-dot playing ' + (cls || '') + '"><svg viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8" rx="1.5" transform="rotate(15 8 8)" fill="#fff"/><rect x="7" y="7" width="2" height="2" transform="rotate(15 8 8)" fill="#00a2ff"/></svg></i>';
+    return '<i class="rb-dot ' + status + ' ' + (cls || '') + '"></i>';
+  }
+  var RB_THUMB = stroke('M7.5 10.5v9.5M7.5 10.5 11 3.5c1.4 0 2.4 1.2 2.2 2.6L12.8 9h5.4a2 2 0 0 1 2 2.4l-1.4 6.9A2 2 0 0 1 16.8 20H7.5M3.5 10.5h4V20h-4z', 1.8).replace('<svg', '<svg class="rb-pp"');
+  var RB_PREMIUM = '<svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6.5" y="6.5" width="7" height="7" rx="1" fill="currentColor" transform="rotate(15 10 10)"/></svg>';
+
+  TOOLS.push({
+    id: 'roblox',
+    label: 'roblox',
+    defaults: {
+      theme: 'dark', headshot: '', body: '', display: '', user: '', verified: false, premium: false,
+      status: 'playing', game: '', gameThumb: '', lastOnline: '',
+      friendsN: '', followers: '', following: '', about: '',
+      friends: [], favorites: []
+    },
+    fields: [
+      { key: 'theme', type: 'select', label: 'mode', options: [['dark', 'dark'], ['light', 'light']] },
+      { type: 'head', label: 'player' },
+      { key: 'headshot', type: 'image', label: 'headshot', max: 400 },
+      { key: 'body', type: 'image', label: 'full avatar (currently wearing)', max: 900 },
+      { type: 'row', fields: [
+        { key: 'display', type: 'text', label: 'display name' },
+        { key: 'user', type: 'text', label: '@username' }
+      ] },
+      { type: 'row', fields: [
+        { key: 'verified', type: 'toggle', label: 'verified' },
+        { key: 'premium', type: 'toggle', label: 'premium' }
+      ] },
+      { type: 'head', label: 'what they\'re doing' },
+      { key: 'status', type: 'select', label: 'status', options: RB_STATUS },
+      { key: 'game', type: 'text', label: 'game they\'re playing' },
+      { key: 'gameThumb', type: 'image', label: 'game picture', max: 900 },
+      { key: 'lastOnline', type: 'text', label: 'last online (offline)', placeholder: '3 days ago' },
+      { type: 'head', label: 'profile' },
+      { type: 'row', fields: [
+        { key: 'friendsN', type: 'text', label: 'friends' },
+        { key: 'followers', type: 'text', label: 'followers' },
+        { key: 'following', type: 'text', label: 'following' }
+      ] },
+      { key: 'about', type: 'textarea', label: 'about', rows: 3 },
+      { type: 'head', label: 'friends' },
+      { key: 'friends', type: 'list', adds: [{ label: '+ friend', item: item({ avatar: '', name: '', status: 'playing', game: '' }) }], item: [
+        { key: 'avatar', type: 'image', label: 'headshot', max: 300 },
+        { type: 'row', fields: [
+          { key: 'name', type: 'text', label: 'name' },
+          { key: 'status', type: 'select', label: 'status', options: RB_STATUS }
+        ] },
+        { key: 'game', type: 'text', label: 'playing' }
+      ] },
+      { type: 'head', label: 'favorite games' },
+      { key: 'favorites', type: 'list', compact: true, adds: [{ label: '+ game', item: item({ thumb: '', name: '', rating: '', players: '' }) }], item: [
+        { key: 'thumb', type: 'image', label: 'game picture', max: 500 },
+        { key: 'name', type: 'text', label: 'game name' },
+        { type: 'row', fields: [
+          { key: 'rating', type: 'text', label: 'likes %', placeholder: '92%' },
+          { key: 'players', type: 'text', label: 'playing now', placeholder: '12.4K' }
+        ] }
+      ] }
+    ],
+    render: function (s) {
+      var t = ' t-' + s.theme;
+      var user = String(s.user || '').replace(/^@/, '');
+      var badges = (s.verified ? '<span class="rb-verified">' + ICON.verified + '</span>' : '') + (s.premium ? '<span class="rb-premium">' + RB_PREMIUM + '</span>' : '');
+      var statusLine = '';
+      if (s.status === 'playing') statusLine = '<div class="rb-now playing"><i></i>Playing ' + E('game', s.game) + '</div>';
+      else if (s.status === 'online') statusLine = '<div class="rb-now online"><i></i>Online</div>';
+      else if (s.status === 'studio') statusLine = '<div class="rb-now studio"><i></i>Studio · ' + E('game', s.game) + '</div>';
+      else statusLine = s.lastOnline ? '<div class="rb-now off">Last online ' + E('lastOnline', s.lastOnline) + '</div>' : '';
+      var playingCard = s.status === 'playing' ? '<div class="rb-card rb-playing">' +
+        (s.gameThumb ? '<img class="rb-gthumb" src="' + s.gameThumb + '"' + DI('gameThumb') + ' alt="">' : '<div class="rb-gthumb"' + DI('gameThumb') + '></div>') +
+        '<div class="rb-pinfo"><span>Currently Playing</span><b>' + E('game', s.game) + '</b></div><span class="rb-btn blue">Join</span></div>' : '';
+      var friends = (s.friends || []).map(function (f, i) {
+        var pre = 'friends.' + i + '.';
+        return '<div class="rb-friend"><div class="rb-fava">' + ava(f.avatar, f.name, 'rb-fimg', '#3a3d41', pre + 'avatar') + rbDot(f.status, 'sm') + '</div>' +
+          '<b>' + E(pre + 'name', f.name) + '</b>' + (f.status === 'playing' ? '<span class="rb-fgame">' + E(pre + 'game', f.game) + '</span>' : '') + '</div>';
+      }).join('');
+      var favs = (s.favorites || []).map(function (g, i) {
+        var pre = 'favorites.' + i + '.';
+        return '<div class="rb-game">' + (g.thumb ? '<img src="' + g.thumb + '"' + DI(pre + 'thumb') + ' alt="">' : '<div class="rb-gimg"' + DI(pre + 'thumb') + '></div>') +
+          '<b>' + E(pre + 'name', g.name) + '</b><div class="rb-gmeta">' + (g.rating ? '<span>' + RB_THUMB + E(pre + 'rating', g.rating) + '</span>' : '') +
+          (g.players ? '<span>' + C.personAdd.replace('<svg', '<svg class="rb-pp"') + E(pre + 'players', g.players) + '</span>' : '') + '</div></div>';
+      }).join('');
+      return '<div class="shot rb' + t + '">' +
+        '<div class="rb-card rb-head"><div class="rb-hs">' + ava(s.headshot, s.display || user, 'rb-hsimg', '#3a3d41', 'headshot') + rbDot(s.status) + '</div>' +
+        '<div class="rb-names"><div class="rb-display">' + E('display', s.display) + badges + '</div>' +
+        '<div class="rb-user">@' + E('user', user) + '</div>' + statusLine +
+        '<div class="rb-stats"><span><b>' + E('friendsN', s.friendsN) + '</b> Friends</span><span><b>' + E('followers', s.followers) + '</b> Followers</span><span><b>' + E('following', s.following) + '</b> Following</span></div></div>' +
+        '<div class="rb-actions">' + (s.status === 'playing' ? '<span class="rb-btn blue">Join</span>' : '') + '<span class="rb-btn">Add Friend</span><span class="rb-btn icon">' + C.dots + '</span></div></div>' +
+        playingCard +
+        '<div class="rb-sec">About</div><div class="rb-card rb-about">' + EB('about', s.about) + '</div>' +
+        '<div class="rb-sec">Currently Wearing</div><div class="rb-card rb-wear">' + (s.body ? '<img src="' + s.body + '"' + DI('body') + ' alt="">' : '<div class="rb-bodyph"' + DI('body') + '></div>') + '</div>' +
+        (friends ? '<div class="rb-sec">Friends <small>(' + E('friendsN', s.friendsN) + ')</small></div><div class="rb-card rb-friends">' + friends + '</div>' : '') +
+        (favs ? '<div class="rb-sec">Favorites</div><div class="rb-games">' + favs + '</div>' : '') +
+        '</div>';
+    }
+  });
+
   /* tab order */
-  var ORDER = ['spotify', 'applemusic', 'lockscreen', 'tweet', 'imessage', 'calls', 'igdm', 'igcomments', 'profile', 'tiktok', 'twitch',
+  var ORDER = ['spotify', 'applemusic', 'lockscreen', 'tweet', 'imessage', 'calls', 'igdm', 'igcomments', 'profile', 'roblox', 'tiktok', 'twitch',
     'youtube', 'reddit', 'facebook', 'pinterest', 'whisper', 'brat', 'snapchat', 'discord', 'chatgpt', 'claude', 'google', 'amazon',
     'minecraft', 'tumblr', 'notes'];
   TOOLS.sort(function (a, b) {
