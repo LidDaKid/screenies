@@ -379,6 +379,24 @@
     return EW(path, html);
   }
 
+  // stardew's real dialogue box, put together the way the game draws it (DialogueBox: 1200x384 box, pieces at 4x)
+  function svRealBox(s, ui, pic) {
+    var x = 40, y = 300, w = 1200, h = 384, xp = x + w - 444;
+    function piece(k, l, t, pw, ph, extra) {
+      var p = ui[k];
+      return '<i class="svr" style="left:' + l + 'px;top:' + t + 'px;width:' + (pw || p.w) + 'px;height:' + (ph || p.h) +
+        'px;background-image:url(' + p.u + ')' + (extra || '') + '"></i>';
+    }
+    var face = pic ? pic.replace('class="gt-face"', 'class="gt-face svr-face"') : '<div class="gt-face svr-face"' + DI('portrait') + '></div>';
+    return piece('bg', x, y, w, h) + piece('planks', xp, y) +
+      '<div class="svr-text" style="left:' + (x + 32) + 'px;top:' + (y + 24) + 'px;width:' + (xp - 72 - x - 32) + 'px">' + gtText(s, 'text') + '</div>' +
+      '<div class="svr-pic" style="left:' + (xp + 100) + 'px;top:' + (y + 32) + 'px">' + face + '</div>' +
+      '<div class="svr-name" style="left:' + (xp + 80) + 'px;top:' + (y + 322) + 'px">' + E('name', s.name) + '</div>' +
+      piece('top', x, y - 20, w, 24) + piece('bottom', x + 12, y + h, w - 20, 32) + piece('left', x - 32, y + 24, 32, h - 28) + piece('right', x + w, y, 28, h) +
+      piece('div', xp - 40, y, 36, h) + piece('divTop', xp - 44, y - 20) + piece('divBottom', xp - 44, y + h) +
+      piece('tl', x - 44, y - 28) + piece('tr', x + w - 8, y - 28) + piece('br', x + w - 8, y + h - 8) + piece('bl', x - 44, y + h - 4);
+  }
+
   TOOLS.push({
     id: 'gametext',
     label: 'game text',
@@ -409,6 +427,7 @@
       }
       if (s.game === 'stardew') {
         var g = GA.get('stardew'), nf = g && g.fonts && g.fonts.SpriteFont1;
+        if (g && g.ui) return '<div class="shot gt g-stardew">' + bg + svRealBox(s, g.ui, pic) + '</div>';
         var name = nf ? EW('name', GA.text(nf, bare(s.name), '#221122')) : E('name', s.name);
         box = '<div class="sv-box"><i class="sv-k tl"></i><i class="sv-k tr"></i><i class="sv-k bl"></i><i class="sv-k br"></i>' +
           '<div class="sv-text">' + gtText(s, 'text') + '</div>' +

@@ -199,7 +199,7 @@ var GameFiles = (function () {
     // portraits = xnb files inside a Portraits folder (or loose xnb files if picked one by one), minus translated copies
     var portraits = files.filter(function (f) {
       var path = f.webkitRelativePath || '';
-      if (!/\.xnb$/i.test(f.name) || /\.[a-z]{2}-[A-Z]{2}\.xnb$/.test(f.name) || /^SpriteFont1/i.test(f.name)) return false;
+      if (!/\.xnb$/i.test(f.name) || /\.[a-z]{2}-[A-Z]{2}\.xnb$/.test(f.name) || /^(SpriteFont1|Cursors)[.]/i.test(f.name)) return false;
       return path ? /(^|[\\/])Portraits[\\/][^\\/]+$/i.test(path) : true;
     });
     var fontFile = files.filter(function (f) { return /(^|[\\/])SpriteFont1\.xnb$/i.test(f.webkitRelativePath || f.name); })[0];
@@ -248,7 +248,32 @@ var GameFiles = (function () {
         });
       }).catch(function () {}));
     }
-    return Promise.all(jobs).then(function () { return { chars: chars, fonts: fonts }; });
+    // the dialogue box itself: stardew draws it from these spots on LooseSprites/Cursors (all at 4x)
+    var ui = null;
+    var cursorsFile = files.filter(function (f) { return /(^|[\/])Cursors\.xnb$/i.test(f.webkitRelativePath || f.name); })[0];
+    var PIECES = {
+      bg: [306, 320, 16, 16], top: [275, 313, 1, 6], bottom: [275, 328, 1, 8], left: [264, 325, 8, 1], right: [293, 324, 7, 1],
+      tl: [261, 311, 14, 13], tr: [291, 311, 12, 11], br: [291, 326, 12, 12], bl: [261, 327, 14, 11],
+      div: [278, 324, 9, 1], divTop: [278, 313, 10, 7], divBottom: [278, 328, 10, 8], planks: [583, 411, 115, 97]
+    };
+    if (cursorsFile) {
+      jobs.push(unpack(cursorsFile).then(function (blobs) {
+        var png = blobs.filter(function (b) { return b.extension === 'png'; })[0];
+        return png && loadImg(png.data).then(function (im) {
+          ui = {};
+          Object.keys(PIECES).forEach(function (k) {
+            var r = PIECES[k], c = document.createElement('canvas');
+            c.width = r[2] * 4;
+            c.height = r[3] * 4;
+            var g = c.getContext('2d');
+            g.imageSmoothingEnabled = false;
+            g.drawImage(im, r[0], r[1], r[2], r[3], 0, 0, c.width, c.height);
+            ui[k] = { u: c.toDataURL('image/png'), w: c.width, h: c.height };
+          });
+        });
+      }).catch(function () {}));
+    }
+    return Promise.all(jobs).then(function () { return { chars: chars, fonts: fonts, ui: ui }; });
   }
 
   return { GMReader: GMReader, readGameMaker: readGameMaker, readStardew: readStardew };

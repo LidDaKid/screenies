@@ -325,3 +325,20 @@
 .call-ui, .ls-ui { pointer-events: none; }
 .call-ui > *, .ls-ui > * { pointer-events: auto; }
 .call-grow, .ls-grow { pointer-events: none !important; }
+
+/* stardew's real box (pieces from the player's own game, see svRealBox) */
+.svr { position: absolute; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
+.svr-text { position: absolute; color: #221122; filter: drop-shadow(-3px 0 0 #ce9c5f) drop-shadow(0 3px 0 #ce9c5f); }
+.svr-pic { position: absolute; width: 256px; height: 256px; }
+.svr-face { display: block; width: 256px; height: 256px; }
+.svr-name {
+  position: absolute;
+  width: 296px;
+  text-align: center;
+  font-family: SVBold, monospace;
+  font-size: 36px;
+  line-height: 40px;
+  color: #56160c;
+  filter: drop-shadow(4px 4px 0 #e09650);
+  white-space: nowrap;
+}
