@@ -520,7 +520,7 @@
   }
 
   // symbols + fonts live in copypaste/ and show in a frame instead of the editor
-  var EXTRAS = { symbols: 'symbols', fonts: 'fonts' }, frame = $('#extraFrame');
+  var EXTRAS = { symbols: 'symbols', fonts: 'fonts', bio: 'bio maker' }, frame = $('#extraFrame');
   function openExtra(id) {
     document.body.classList.add('extra-on');
     var url = 'copypaste/index.html?embed#' + id;
@@ -558,7 +558,7 @@
     tabs.appendChild(a);
   });
   Object.keys(EXTRAS).forEach(function (id) {
-    var a = el('a', 'extra', id);
+    var a = el('a', 'extra', EXTRAS[id]);
     a.href = '#' + id;
     a.dataset.id = id;
     tabs.appendChild(a);
