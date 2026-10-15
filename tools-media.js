@@ -506,8 +506,8 @@
 
   /* tab order */
   var ORDER = ['spotify', 'applemusic', 'lockscreen', 'wrapped', 'playlist', 'friendact', 'tweet', 'imessage', 'android', 'calls', 'voicemail', 'screentime',
-    'igdm', 'igcomments', 'profile', 'roblox', 'tiktok', 'twitch', 'youtube', 'ytnotif', 'reddit', 'facebook', 'pinterest', 'pinfeed', 'whisper', 'brat',
-    'glitter', 'snapchat', 'discord', 'dccall', 'dcprofile', 'chatgpt', 'claude', 'google', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'poster',
+    'igdm', 'igcomments', 'igpost', 'igstory', 'profile', 'bereal', 'threads', 'whatsapp', 'messenger', 'notifs', 'roblox', 'tiktok', 'twitch', 'youtube', 'ytnotif', 'reddit', 'facebook', 'pinterest', 'pinfeed', 'whisper', 'brat',
+    'glitter', 'snapchat', 'discord', 'dccall', 'dcprofile', 'chatgpt', 'claude', 'google', 'ao3', 'wattpad', 'genius', 'suno', 'letterboxd', 'achieve', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'poster',
     'sims', 'minecraft', 'tumblr', 'notes'];
   TOOLS.sort(function (a, b) {
     var x = ORDER.indexOf(a.id), y = ORDER.indexOf(b.id);
