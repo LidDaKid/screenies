@@ -505,10 +505,17 @@
   });
 
   /* tab order */
-  var ORDER = ['spotify', 'applemusic', 'lockscreen', 'wrapped', 'playlist', 'friendact', 'tweet', 'imessage', 'android', 'calls', 'voicemail', 'screentime',
-    'igdm', 'igcomments', 'igpost', 'igstory', 'profile', 'bereal', 'threads', 'whatsapp', 'messenger', 'notifs', 'roblox', 'tiktok', 'twitch', 'youtube', 'ytnotif', 'reddit', 'facebook', 'pinterest', 'pinfeed', 'whisper', 'brat',
-    'glitter', 'snapchat', 'discord', 'dccall', 'dcprofile', 'chatgpt', 'claude', 'google', 'ao3', 'wattpad', 'genius', 'suno', 'letterboxd', 'achieve', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'poster',
-    'sims', 'minecraft', 'tumblr', 'notes'];
+  var ORDER = ['spotify', 'applemusic', 'lockscreen', 'wrapped', 'playlist', 'friendact', 'blend', 'lastfm', 'soundcloud', 'receipt', 'ticket', 'setlist', 'ipod', 'cdcase', 'cassette', 'tweet', 'imessage', 'groupchat', 'android', 'calls', 'voicemail', 'screentime',
+    'widgets', 'weather', 'findmy', 'flipphone', 'igdm', 'igcomments', 'igpost', 'igstory', 'profile', 'bereal', 'threads', 'whatsapp', 'messenger', 'notifs', 'roblox', 'tiktok', 'twitch', 'youtube', 'ytnotif', 'reddit', 'facebook', 'pinterest', 'pinfeed', 'whisper', 'brat',
+    'glitter', 'snapchat', 'discord', 'dccall', 'dcprofile', 'chatgpt', 'claude', 'google', 'ao3', 'wattpad', 'genius', 'suno', 'letterboxd', 'achieve', 'steam', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'magazine', 'photobooth', 'movieposter', 'tradingcard', 'dollbox', 'poster',
+    'sims', 'minecraft', 'tumblr', 'tumblrask', 'livejournal', 'myspace', 'msn', 'pictochat', 'tellonym', 'notes'];
+  /* phone frame: physical things never get one, full phone screens keep their own status bar */
+  var NOFRAME = ['flipphone', 'ipod', 'pictochat', 'cdcase', 'cassette', 'receipt', 'setlist', 'magazine', 'photobooth', 'dollbox', 'movieposter', 'tradingcard'];
+  var OWNBAR = ['widgets', 'weather', 'findmy', 'groupchat'];
+  TOOLS.forEach(function (t) {
+    if (NOFRAME.indexOf(t.id) >= 0 && t.phone === undefined) t.phone = false;
+    if (OWNBAR.indexOf(t.id) >= 0 && t.phone === undefined) t.phone = 'own';
+  });
   TOOLS.sort(function (a, b) {
     var x = ORDER.indexOf(a.id), y = ORDER.indexOf(b.id);
     return (x < 0 ? 999 : x) - (y < 0 ? 999 : y);

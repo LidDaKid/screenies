@@ -117,7 +117,7 @@ button.small { padding: 6px 10px; font-size: 11px; }
 
 /* ---------- form ---------- */
 
-#form h3 {
+#form h3, #phoneset h3 {
   margin: 20px 0 8px;
   font: 12px/1 Silkscreen, monospace;
   color: var(--pink);
@@ -241,3 +241,110 @@ body.extra-on main { display: none; }
 body.extra-on #extra { display: flex; }
 #tabs a.extra { border-color: var(--pink); color: var(--pink); }
 #tabs a.extra.on { color: var(--ink); }
+
+/* ---------- undo / random / export options ---------- */
+
+#actions { flex-wrap: wrap; align-items: center; }
+.acts-left, .acts-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.acts-left { margin-right: auto; }
+.acts-opts { margin-right: 6px; }
+button:disabled { opacity: .35; cursor: default; filter: none; }
+button.opt.on { color: var(--pink); border-color: var(--pink); }
+
+/* presets */
+.presets { margin-bottom: 14px; }
+.pre-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pre-row select {
+  flex: 1 1 70px;
+  min-width: 0;
+  padding: 6px 8px;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+}
+.pre-row select:focus { border-color: var(--pink); }
+.pre-row button { padding: 6px 8px; }
+.pre-row select option { background: var(--panel); }
+
+/* drag to reorder list cards */
+.grip {
+  width: 10px;
+  height: 15px;
+  margin: 2px auto 0 4px;
+  padding: 2px 6px;
+  box-sizing: content-box;
+  cursor: grab;
+  touch-action: none;
+  background: radial-gradient(circle, var(--dim) 1.3px, transparent 1.7px) 0 0 / 5px 5px content-box;
+  opacity: .85;
+}
+.grip:hover { opacity: 1; }
+.item.drag { border-color: var(--pink); box-shadow: 0 6px 18px rgba(255, 61, 154, .25); }
+.list.dragging, .list.dragging * { cursor: grabbing !important; user-select: none; }
+
+/* ---------- phone frame (goes in the png too) ---------- */
+
+.pframe {
+  position: relative;
+  width: 418px;
+  padding: 14px;
+  border-radius: 68px;
+  background: #0b0b0d;
+  box-shadow: inset 0 0 0 2px #34343a, inset 0 0 0 5px #050505;
+}
+.pf-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 390px;
+  min-height: 844px;
+  border-radius: 54px;
+  overflow: hidden;
+  background: #000;
+}
+.pf-island {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  width: 124px;
+  height: 36px;
+  margin-left: -62px;
+  border-radius: 20px;
+  background: #000;
+  z-index: 30;
+}
+.pf-sbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 54px;
+  padding: 4px 30px 0 50px;
+  font-family: Inter, -apple-system, 'Noto Color Emoji', sans-serif;
+}
+.pf-time { font-size: 17px; font-weight: 600; letter-spacing: -.01em; min-width: 2em; outline: none; }
+.pf-icons { display: flex; align-items: center; gap: 6px; }
+.pf-icons svg { display: block; fill: currentColor; }
+.pf-body { position: relative; flex: none; margin: 0 auto; overflow: hidden; }
+.pframe.mid .pf-body { margin: auto; }
+.pframe.mid .pf-screen { padding-bottom: 54px; }
+.pf-scale { width: max-content; transform-origin: top left; }
+.pf-home {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 134px;
+  height: 5px;
+  margin-left: -67px;
+  border-radius: 3px;
+  background: currentColor;
+  z-index: 30;
+}
+.pframe.bar-light .pf-sbar, .pframe.bar-light .pf-home { color: #fff; }
+.pframe.bar-dark .pf-sbar, .pframe.bar-dark .pf-home { color: #000; }
+#fit [data-pe] { cursor: text; border-radius: 3px; }
+#fit [data-pe]:hover { box-shadow: 0 0 0 1.5px rgba(255, 61, 154, .75); }
+#fit [data-pe]:focus { box-shadow: 0 0 0 2px #ff3d9a; }
+#fit.exporting [data-pe] { box-shadow: none !important; }
+#phoneset[hidden] { display: none; }
