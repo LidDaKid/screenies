@@ -809,7 +809,7 @@
     if (/\b(len|length|duration|runtime)\b/.test(k)) return 'len';
     if (/\b(price|cost|total)\b/.test(k)) return 'price';
     if (/\b(match|pct|percent)\b|%/.test(k)) return 'pct';
-    if (/temp|\b(hi|lo|high|low|level|lvl|hp|damage|dmg|sec|section|row|seat|gate|xp|score|hours|hrs|age|issue|rank|num|number)\b/.test(k)) return 'num';
+    if (/temp|\b(hi|lo|high|low|level|lvl|hp|atk|def|attack|defense|damage|dmg|sec|section|row|seat|gate|xp|score|hours|hrs|age|issue|rank|num|number)\b/.test(k)) return 'num';
     if (/\b(ago|late)\b/.test(k)) return 'ago';
     if (/stamp|\btime\b|clock/.test(k)) return 'time';
     if (/\byear\b/.test(k)) return 'year';
@@ -895,6 +895,8 @@
     randomFields(tool.fields, st, false, 0);
     lists.forEach(function (f) {
       var arr = st[f.key] || (st[f.key] = []), want = 3 + rnd(4);
+      // lists can cap how many random fills (e.g. trading card moves)
+      if (f.rmax) { want = Math.min(want, f.rmax); if (arr.length > want) arr.length = want; }
       while (arr.length < want && f.adds && f.adds.length) {
         var a = pick(f.adds);
         arr.push(typeof a.item === 'function' ? a.item(st) : clone(a.item));

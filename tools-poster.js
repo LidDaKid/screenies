@@ -440,7 +440,7 @@
         { key: 'level', type: 'select', label: 'stars (anime)', options: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'].map(function (k) { return [k, k]; }) }
       ] },
       { type: 'head', label: 'moves / stats' },
-      { key: 'moves', type: 'list', adds: [{ label: '+ move', item: item({ cost: '2', name: '', text: '', dmg: '' }) }], item: [
+      { key: 'moves', type: 'list', rmax: 2, adds: [{ label: '+ move', item: item({ cost: '2', name: '', text: '', dmg: '' }) }], item: [
         { type: 'row', fields: [
           { key: 'name', type: 'text', label: 'name' },
           { key: 'dmg', type: 'text', label: 'damage / number' },
