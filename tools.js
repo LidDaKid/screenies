@@ -134,8 +134,8 @@ TOOLS.push({
     { key: 'artist', type: 'text', label: 'artist' },
     { key: 'lyrics', type: 'textarea', label: 'lyrics', rows: 5 },
     { key: 'bg', type: 'color', label: 'card color', swatches: function (s) { return s.palette; } },
+    { key: 'fg', type: 'color', label: 'text color', swatches: function (s) { return ['#ffffff', '#000000'].concat(s.palette); } },
     { type: 'row', fields: [
-      { key: 'fg', type: 'select', label: 'text', options: [['auto', 'auto'], ['#ffffff', 'white'], ['#000000', 'black']] },
       { key: 'size', type: 'select', label: 'size', options: [['s', 'small'], ['m', 'medium'], ['l', 'big']] },
       { key: 'frame', type: 'select', label: 'shape', options: [['card', 'card'], ['story', 'story']] }
     ] }

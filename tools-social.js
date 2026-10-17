@@ -502,13 +502,14 @@
   TOOLS.push({
     id: 'applemusic',
     label: 'apple music',
-    defaults: { cover: '', palette: [], title: '', artist: '', lyrics: '', bg: '#3a2a4a', look: 'blur', size: 'm', frame: 'card' },
+    defaults: { cover: '', palette: [], title: '', artist: '', lyrics: '', bg: '#3a2a4a', fg: '#ffffff', look: 'blur', size: 'm', frame: 'card' },
     fields: [
       { key: 'cover', type: 'image', label: 'album cover', max: 600, palette: true },
       { key: 'title', type: 'text', label: 'song' },
       { key: 'artist', type: 'text', label: 'artist' },
       { key: 'lyrics', type: 'textarea', label: 'lyrics', rows: 5 },
       { key: 'bg', type: 'color', label: 'color', swatches: function (s) { return s.palette; } },
+      { key: 'fg', type: 'color', label: 'text color', swatches: function (s) { return ['#ffffff', '#000000'].concat(s.palette); } },
       { type: 'row', fields: [
         { key: 'look', type: 'select', label: 'background', options: [['blur', 'blurry cover'], ['color', 'color']] },
         { key: 'size', type: 'select', label: 'size', options: [['s', 'small'], ['m', 'medium'], ['l', 'big']] },
@@ -518,7 +519,7 @@
     render: function (s) {
       var blur = s.look === 'blur' && s.cover;
       var bgLayer = blur ? '<img class="am-blur" src="' + s.cover + '"' + DI('cover') + ' alt=""><div class="am-dim"></div>' : '';
-      var card = '<div class="am-card sz-' + s.size + '" style="background:linear-gradient(160deg,' + U.shade(s.bg, 0.12) + ',' + U.shade(s.bg, -0.45) + ')">' + bgLayer +
+      var card = '<div class="am-card sz-' + s.size + '" style="background:linear-gradient(160deg,' + U.shade(s.bg, 0.12) + ',' + U.shade(s.bg, -0.45) + ');color:' + (s.fg || '#ffffff') + '">' + bgLayer +
         '<div class="am-in"><div class="am-top">' + (s.cover ? '<img class="am-cover" src="' + s.cover + '"' + DI('cover') + ' alt="">' : '<div class="am-cover am-noart"></div>') +
         '<div class="am-meta"><b>' + E('title', s.title) + '</b><span>' + E('artist', s.artist) + '</span></div></div>' +
         '<div class="am-lyrics">' + EB('lyrics', s.lyrics) + '</div>' +
