@@ -504,10 +504,123 @@
     }
   });
 
+  /* ============================== zoom call ============================== */
+
+  var Z = {
+    shield: '<svg viewBox="0 0 24 24"><path fill="#23d959" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m8.5 12 2.5 2.5 4.5-5"/></svg>',
+    grid: stroke('M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', 1.8),
+    caret: stroke('M7 14l5-5 5 5', 2),
+    slash: '<path d="M3.5 3.5l17 17" stroke="#e02828" stroke-width="2.4" stroke-linecap="round"/>',
+    ppl: stroke('M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.5c2 .6 3.3 2.4 3.5 5.5', 1.7),
+    chat: stroke('M4 5h16v11H9l-5 4z', 1.8),
+    heart: stroke('M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10C19.5 15.4 12 20 12 20z', 1.8),
+    share: '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="15" rx="3.5" fill="#23d959"/><path d="M12 15.5V8.5M8.8 11.5 12 8.3l3.2 3.2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    shieldO: stroke('M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6z', 1.7),
+    spark: stroke('M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18', 1.7),
+    apps: stroke('M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z', 1.6),
+    more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+    micSm: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5a3.3 3.3 0 0 1 3.3 3.3v5.4a3.3 3.3 0 0 1-6.6 0V5.8A3.3 3.3 0 0 1 12 2.5zM5.5 11h1.8a4.7 4.7 0 0 0 9.4 0h1.8a6.5 6.5 0 0 1-5.6 6.4V21h-1.8v-3.6A6.5 6.5 0 0 1 5.5 11z"/><path d="M3.5 3.5l17 17" stroke="#e02828" stroke-width="2.6" stroke-linecap="round"/></svg>'
+  };
+  function zMic(off) {
+    return '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5a3.3 3.3 0 0 1 3.3 3.3v5.4a3.3 3.3 0 0 1-6.6 0V5.8A3.3 3.3 0 0 1 12 2.5zM5.5 11h1.8a4.7 4.7 0 0 0 9.4 0h1.8a6.5 6.5 0 0 1-5.6 6.4V21h-1.8v-3.6A6.5 6.5 0 0 1 5.5 11z"/>' + (off ? Z.slash : '') + '</svg>';
+  }
+  function zCam(off) {
+    return '<svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 7.5A2.5 2.5 0 0 1 5.5 5h8A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-8A2.5 2.5 0 0 1 3 16.5zM16 10.5l5-3v9l-5-3z"/>' + (off ? Z.slash : '') + '</svg>';
+  }
+  function zBtn(ic, label, opts) {
+    opts = opts || {};
+    return '<div class="zm-btn' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="zm-ic">' + ic + (opts.count ? '<i class="zm-count">' + opts.count + '</i>' : '') +
+      (opts.caret ? '<span class="zm-caret">' + Z.caret + '</span>' : '') + '</div><span>' + label + '</span></div>';
+  }
+
+  TOOLS.push({
+    id: 'zoom',
+    label: 'zoom call',
+    phone: false,
+    defaults: { title: '', view: 'gallery', recording: false, myMuted: false, myCamOff: false, leave: false, showChat: false, people: [], chat: [] },
+    fields: [
+      { type: 'row', fields: [
+        { key: 'title', type: 'text', label: 'meeting title', placeholder: "Draculaura's Zoom Meeting" },
+        { key: 'view', type: 'select', label: 'view', options: [['gallery', 'gallery view'], ['speaker', 'speaker view']] }
+      ] },
+      { type: 'row', fields: [
+        { key: 'recording', type: 'toggle', label: 'recording' },
+        { key: 'myMuted', type: 'toggle', label: "you're muted" },
+        { key: 'myCamOff', type: 'toggle', label: 'your camera off' },
+        { key: 'leave', type: 'toggle', label: 'leave (not host)' }
+      ] },
+      { type: 'head', label: 'people in the call' },
+      { key: 'people', type: 'list', adds: [{ label: '+ person', item: item({ pfp: '', name: '', video: '', speaking: false, muted: false, hand: false, emoji: '' }) }], item: [
+        { type: 'row', fields: [
+          { key: 'pfp', type: 'image', label: 'pfp (camera off)', max: 300 },
+          { key: 'video', type: 'image', label: 'camera', max: 1000 }
+        ] },
+        { type: 'row', fields: [
+          { key: 'name', type: 'text', label: 'name' },
+          { key: 'emoji', type: 'text', label: 'reaction emoji' }
+        ] },
+        { type: 'row', fields: [
+          { key: 'speaking', type: 'toggle', label: 'talking' },
+          { key: 'muted', type: 'toggle', label: 'muted' },
+          { key: 'hand', type: 'toggle', label: 'hand raised' }
+        ] }
+      ] },
+      { type: 'head', label: 'chat' },
+      { key: 'showChat', type: 'toggle', label: 'show chat panel' },
+      { key: 'chat', type: 'list', adds: [{ label: '+ message', item: item({ pfp: '', name: '', time: '', text: '' }) }], item: [
+        { type: 'row', fields: [
+          { key: 'pfp', type: 'image', label: 'pfp', max: 200 },
+          { key: 'name', type: 'text', label: 'name' },
+          { key: 'time', type: 'text', label: 'time', placeholder: '7:42 PM' }
+        ] },
+        { key: 'text', type: 'textarea', label: 'message', rows: 2 }
+      ] }
+    ],
+    render: function (s) {
+      var ppl = s.people || [];
+      function tile(p, i, small) {
+        var pre = 'people.' + i + '.', em = String(p.emoji || '').replace(/​/g, '').trim();
+        var inner = p.video ? '<img class="zm-vid" src="' + p.video + '"' + DI(pre + 'video') + ' alt="">' :
+          (p.pfp ? '<img class="zm-pfp" src="' + p.pfp + '"' + DI(pre + 'pfp') + ' alt="">' :
+            '<div class="zm-bigname"' + DI(pre + 'pfp') + '>' + E(pre + 'name', p.name) + '</div>');
+        return '<div class="zm-tile' + (p.speaking ? ' talk' : '') + (small ? ' sm' : '') + '">' + inner +
+          ((p.hand || em) ? '<div class="zm-react">' + (p.hand ? '<i>✋</i>' : '') + (em ? '<i>' + esc(em) + '</i>' : '') + '</div>' : '') +
+          '<div class="zm-name">' + (p.muted ? '<i class="zm-mut">' + Z.micSm + '</i>' : '') + E(pre + 'name', p.name) + '</div></div>';
+      }
+      var stage;
+      if (s.view === 'speaker' && ppl.length) {
+        var main = 0, found = false;
+        ppl.forEach(function (p, i) { if (p.speaking && !found) { main = i; found = true; } });
+        var strip = ppl.map(function (p, i) { return i === main ? '' : tile(p, i, true); }).join('');
+        stage = '<div class="zm-spk">' + (strip ? '<div class="zm-strip">' + strip + '</div>' : '') + '<div class="zm-main">' + tile(ppl[main], main) + '</div></div>';
+      } else {
+        var n = ppl.length, cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : 4;
+        stage = '<div class="zm-grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + ppl.map(function (p, i) { return tile(p, i); }).join('') + '</div>';
+      }
+      var chat = '';
+      if (s.showChat) {
+        chat = '<div class="zm-chat"><div class="zm-chat-hd">Meeting chat</div><div class="zm-msgs">' + (s.chat || []).map(function (m, i) {
+          var pre = 'chat.' + i + '.';
+          return '<div class="zm-msg">' + ava(m.pfp, m.name, 'zm-cpfp', undefined, pre + 'pfp') + '<div class="zm-mb"><div class="zm-mh"><b>' + E(pre + 'name', m.name) + '</b> to Everyone' +
+            (m.time ? '<span>' + E(pre + 'time', m.time) + '</span>' : '') + '</div><div class="zm-bub">' + EB(pre + 'text', m.text) + '</div></div></div>';
+        }).join('') + '</div><div class="zm-input">Message Everyone</div></div>';
+      }
+      return '<div class="shot zm' + (s.showChat ? ' chat' : '') + '"><div class="zm-top"><span class="zm-shield">' + Z.shield + '</span>' +
+        (s.recording ? '<span class="zm-rec"><i></i>Recording...</span>' : '') +
+        '<b class="zm-title">' + E('title', s.title) + '</b><span class="zm-view">' + Z.grid + 'View</span></div>' +
+        '<div class="zm-body"><div class="zm-stage">' + stage + '</div>' + chat + '</div>' +
+        '<div class="zm-bar"><div class="zm-grp">' + zBtn(zMic(s.myMuted), s.myMuted ? 'Unmute' : 'Mute', { caret: 1, cls: s.myMuted ? 'off' : '' }) +
+        zBtn(zCam(s.myCamOff), s.myCamOff ? 'Start Video' : 'Stop Video', { caret: 1, cls: s.myCamOff ? 'off' : '' }) + '</div>' +
+        '<div class="zm-grp mid">' + zBtn(Z.ppl, 'Participants', { count: ppl.length || '', caret: 1 }) + zBtn(Z.chat, 'Chat', { cls: s.showChat ? 'on' : '' }) + zBtn(Z.heart, 'React') +
+        zBtn(Z.share, 'Share', { caret: 1 }) + zBtn(Z.shieldO, 'Host tools') + zBtn(Z.spark, 'AI Companion') + zBtn(Z.apps, 'Apps') + zBtn(Z.more, 'More') + '</div>' +
+        '<div class="zm-end">' + (s.leave ? 'Leave' : 'End') + '</div></div></div>';
+    }
+  });
+
   /* tab order */
   var ORDER = ['spotify', 'applemusic', 'lockscreen', 'wrapped', 'playlist', 'friendact', 'blend', 'lastfm', 'soundcloud', 'receipt', 'ticket', 'setlist', 'ipod', 'cdcase', 'cassette', 'tweet', 'imessage', 'groupchat', 'android', 'calls', 'voicemail', 'screentime',
     'widgets', 'weather', 'findmy', 'flipphone', 'igdm', 'igcomments', 'igpost', 'igstory', 'profile', 'bereal', 'threads', 'whatsapp', 'messenger', 'notifs', 'roblox', 'tiktok', 'twitch', 'youtube', 'ytnotif', 'reddit', 'facebook', 'pinterest', 'pinfeed', 'whisper', 'brat',
-    'glitter', 'snapchat', 'discord', 'dccall', 'dcprofile', 'chatgpt', 'claude', 'google', 'ao3', 'wattpad', 'genius', 'suno', 'letterboxd', 'achieve', 'steam', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'magazine', 'photobooth', 'movieposter', 'tradingcard', 'dollbox', 'poster',
+    'glitter', 'snapchat', 'discord', 'dccall', 'zoom', 'dcprofile', 'chatgpt', 'claude', 'google', 'ao3', 'wattpad', 'genius', 'suno', 'letterboxd', 'achieve', 'steam', 'amazon', 'amazonorder', 'delivery', 'news', 'award', 'magazine', 'photobooth', 'movieposter', 'tradingcard', 'dollbox', 'poster',
     'sims', 'minecraft', 'tumblr', 'tumblrask', 'livejournal', 'myspace', 'msn', 'pictochat', 'tellonym', 'notes'];
   /* phone frame: physical things never get one, full phone screens keep their own status bar */
   var NOFRAME = ['flipphone', 'ipod', 'pictochat', 'cdcase', 'cassette', 'receipt', 'setlist', 'magazine', 'photobooth', 'dollbox', 'movieposter', 'tradingcard'];
